@@ -40,11 +40,11 @@ void motorLeftWrite(int32_t duty_cycle){
 
   if (duty_cycle > 0){ //go forward
     analogWrite(MOTOR1_PWM2, 65535);
-    analogWrite(MOTOR1_PWM1, duty_cycle);
+    analogWrite(MOTOR1_PWM1, 65535 - duty_cycle);
   }
 
   if (duty_cycle < 0){ //go backwards
-    analogWrite(MOTOR1_PWM2, -duty_cycle);
+    analogWrite(MOTOR1_PWM2, 65535 + duty_cycle);
     analogWrite(MOTOR1_PWM1, 65535);
   }
 
@@ -62,11 +62,11 @@ void motorRightWrite(int32_t duty_cycle){
 
   if (duty_cycle > 0){ // Go forward
     analogWrite(MOTOR2_PWM2, 65535);
-    analogWrite(MOTOR2_PWM1, duty_cycle);
+    analogWrite(MOTOR2_PWM1, 65535 - duty_cycle);       // this is a compensation so that a higher PWM value equals a higher speed.
   }
 
   if (duty_cycle < 0){ // Go backwards
-    analogWrite(MOTOR2_PWM2, -duty_cycle);
+    analogWrite(MOTOR2_PWM2, 65535 + duty_cycle);
     analogWrite(MOTOR2_PWM1, 65535);
   }
 

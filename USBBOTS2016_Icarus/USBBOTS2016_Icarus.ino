@@ -1,58 +1,48 @@
-#include <Arduino.h>
-#include <icarus_pinout.h>
+#include "icarus_pinout.h"
+
+uint16_t IR[4];
+
 
 //USBBOTS2016_Icarus.ino
 
-extern int16_t gyro_bias_z;
-int led = 13;
 
 void setup() {
-  // put your setup code here, to run once:
+  irSensorSetup();
 
-  pinMode(0, OUTPUT);  //Safe mode for IR emitter
-  digitalWriteFast(0, LOW);
   pinMode(13, INPUT);   //Safe mode for onboard led
-
-  pinMode(BTN_SEARCH, INPUT);
-  pinMode(BTN_SPEED, INPUT);
+  wifiSetup();
 
   Serial.begin(115200);
 
-  gyroSetup();
-  motorSetup();
-}
+}  // put your setup code here, to run once:
 
 
-float angle=0, dps;
 
 
 void loop() {
 
-    while(digitalReadFast(BTN_SPEED)){
+  //
+  // getIR(IR);
+  // Serial.println(IR[0]);
+  // Serial.println(IR[1]);
+  // Serial.println(IR[2]);
+  // Serial.println(IR[3]);
+  // Serial.println(" ");
+  //
+  //
+  // delay(100);
 
-        Serial.print(digitalReadFast(BTN_SEARCH));
-        Serial.print(" ");
-        Serial.println(digitalReadFast(BTN_SPEED));
-        delay(20);
 
-    };
+  if (Serial2.available()) {
+    datos = Serial2.read();
+    Serial.print(datos);
+  }
 
-    delay(3000);
+  if (Serial.available()) {
+    datos = Serial.read();
+    Serial2.print(datos);
+  }
 
-    setAngle(0.0);
 
-    while(angle < 90){
-        angle = getAngle();
-        dps = getAngularVelocity();
-        Serial.print(angle);
-        Serial.print(" ");
-        Serial.println(dps);
-        motorLeftWrite(-20000);
-        motorRightWrite(20000);
-        delay(20);
-    }
-
-    motorLeftWrite(0);
-    motorRightWrite(0);
 
 }

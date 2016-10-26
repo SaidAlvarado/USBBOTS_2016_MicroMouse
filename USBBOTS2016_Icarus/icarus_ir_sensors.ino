@@ -11,9 +11,9 @@
 ADC *adc = new ADC();
 
 // Variables for data storage
-int valorInfra[4];
-int ambientlight[4];
-int light[4];
+uint16_t valorInfra[4];
+uint16_t ambientlight[4];
+uint16_t light[4];
 
 
 /* =====================================================================================
@@ -24,7 +24,7 @@ int light[4];
 void irSensorSetup(void) {
   //Serial.begin(9600);  //Inicializar para el test en el lab
 
-  adc = new ADC();
+  // adc = new ADC();
 
   pinMode(IR_EMITTER, OUTPUT );
   digitalWriteFast(IR_EMITTER, LOW);
@@ -34,22 +34,15 @@ void irSensorSetup(void) {
   pinMode( IR_FRONT_RIGHT , INPUT );
   pinMode( IR_FRONT_LEFT , INPUT );
 
-  adc->setAveraging(4);
-  adc->setResolution(12);
-  adc->setConversionSpeed(ADC_VERY_HIGH_SPEED);
-  adc->setSamplingSpeed(ADC_VERY_HIGH_SPEED);
-#if ADC_NUM_ADCS>1
-  adc->setAveraging(32, ADC_0);
+  adc->setAveraging(4, ADC_0);
   adc->setResolution(16, ADC_0);
   adc->setConversionSpeed(ADC_VERY_HIGH_SPEED, ADC_0);
   adc->setSamplingSpeed(ADC_VERY_HIGH_SPEED, ADC_0);
 
-#endif
 }
 
 
-
-
+// FUnction that access the hardware
 void irRead(void) {
 
   ambientlight[0] = adc->analogRead(IR_DIAG_RIGHT);
@@ -59,7 +52,7 @@ void irRead(void) {
   // delayMicroseconds(10);
   digitalWriteFast(IR_EMITTER, HIGH);
   // delayMicroseconds(10);
-  delayMicroseconds(100);
+  delayMicroseconds(50);
   light[0] = adc->analogRead(IR_DIAG_RIGHT);
   light[1] = adc->analogRead(IR_FRONT_RIGHT);
   light[2] = adc->analogRead(IR_FRONT_LEFT);
@@ -69,4 +62,15 @@ void irRead(void) {
   valorInfra[1] = light[1] - ambientlight[1];
   valorInfra[2] = light[2] - ambientlight[2];
   valorInfra[3] = light[3] - ambientlight[3];
+}
+
+
+// Send ADC values to the code
+void getIR(uint16_t *valores) {
+
+    irRead();
+    valores[0] = valorInfra[0];
+    valores[1] = valorInfra[1];
+    valores[2] = valorInfra[2];
+    valores[3] = valorInfra[3];
 }
