@@ -7,20 +7,9 @@
 ====================================================================================== */
 
 // This Functions lets you interface with the wifi chip to create a serial console over wifi.
+// To communicate only use the Serial2 of the teensy, everything else is handled by the ESP-12
 
-
-
-/*=========================================================================
-    Variables
-    -----------------------------------------------------------------------*/
-    String ordenes[]=   {"AT+CWMODE=2",
-                         "AT+CWJAP=Icarus,usbbots328"
-                         "AT+CIPMUX=1",
-                         "AT+CIPSERVER=1,90",
-                         "END"                 // Para reconocer el fin de los comandos AT
-    };
-/*=========================================================================*/
-
+//The ESP-12 will create a Telnet server on IP: 192.168.4.1 on port 23.
 
 /*===================================================================
                 Public functions
@@ -31,12 +20,10 @@
 void wifiSetup() {
 
     // Initialize Hardware Serial
-    Serial2.begin(9600);
+    Serial2.begin(115200);
 
     //Prepares GPIO
     pinMode(WIFI_AUTODETECT, INPUT);
-    pinMode(WIFI_TX, INPUT);
-    pinMode(WIFI_RX, OUTPUT);
     pinMode(WIFI_RST, OUTPUT);
     pinMode(WIFI_BOOT, OUTPUT);
 
@@ -44,23 +31,4 @@ void wifiSetup() {
     digitalWriteFast(WIFI_BOOT, HIGH);
     digitalWriteFast(WIFI_RST, HIGH);
 
-    // Sends the commands
-    for (size_t i = 0; i < 5; i++) {
-        Serial2.println(ordenes[i]);
-    }
 }
-
-uint8_t datos;
-//
-// void loop() {
-//
-//   if (Serial2.available()) {
-//     datos = Serial2.read();
-//     Serial.print(datos);
-//   }
-//
-//   if (Serial.available()) {
-//     datos = Serial.read();
-//     Serial2.print(datos);
-//   }
-// }

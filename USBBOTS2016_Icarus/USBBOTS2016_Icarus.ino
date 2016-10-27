@@ -17,7 +17,7 @@ void setup() {
 }  // put your setup code here, to run once:
 
 
-
+uint8_t datos;
 
 void loop() {
 
@@ -32,16 +32,14 @@ void loop() {
   //
   // delay(100);
 
-
-  if (Serial2.available()) {
-    datos = Serial2.read();
-    Serial.print(datos);
+  if (digitalReadFast(WIFI_AUTODETECT)) Serial.println("Wifi desconectado");
+  else {
+      Serial2.println("hola!");
+      Serial.println("Wifi Listo!");
   }
 
-  if (Serial.available()) {
-    datos = Serial.read();
-    Serial2.print(datos);
-  }
+
+  delay(1000);
 
 
 
