@@ -1,8 +1,13 @@
 #include <Arduino.h>
 
 //**** Using a Teensy 3.1 to Connect an ESP8266 to PC USB Serial *******
-//     Compiled with Arduino 1.60 and Teensyduino 1.21b6
-//     ESP8266 Firmware: AT21SDK95-2015-01-24.bin
+//  On boot the teensy restarts the ESP-12 on boot mode and forwards the USB Serial
+//  to the Serial2 interface connected to the ESP-12 at 115200 baud
+//
+// Afterwards the Arduino software or Atom with PlatformIO can program the ESP through the teensy USB Serial port
+// only once though, further flashing requieres rebooting the teensy, so that the teensy can restart the ESP in boot mode.
+
+
 
 #define WIFI_TX         9
 #define WIFI_RX         10
