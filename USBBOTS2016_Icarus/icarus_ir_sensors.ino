@@ -45,18 +45,18 @@ void irSensorSetup(void) {
 // FUnction that access the hardware
 void irRead(void) {
 
-  ambientlight[0] = adc->analogRead(IR_DIAG_RIGHT);
-  ambientlight[1] = adc->analogRead(IR_FRONT_RIGHT);
-  ambientlight[2] = adc->analogRead(IR_FRONT_LEFT);
-  ambientlight[3] = adc->analogRead(IR_DIAG_LEFT);
+  ambientlight[0] = adc->analogRead(IR_FRONT_RIGHT);
+  ambientlight[1] = adc->analogRead(IR_DIAG_RIGHT);
+  ambientlight[2] = adc->analogRead(IR_DIAG_LEFT);
+  ambientlight[3] = adc->analogRead(IR_FRONT_LEFT);
   // delayMicroseconds(10);
   digitalWriteFast(IR_EMITTER, HIGH);
   // delayMicroseconds(10);
   delayMicroseconds(50);
-  light[0] = adc->analogRead(IR_DIAG_RIGHT);
-  light[1] = adc->analogRead(IR_FRONT_RIGHT);
-  light[2] = adc->analogRead(IR_FRONT_LEFT);
-  light[3] = adc->analogRead(IR_DIAG_LEFT);
+  light[0] = adc->analogRead(IR_FRONT_RIGHT);
+  light[1] = adc->analogRead(IR_DIAG_RIGHT);
+  light[2] = adc->analogRead(IR_DIAG_LEFT);
+  light[3] = adc->analogRead(IR_FRONT_LEFT);
   digitalWriteFast(IR_EMITTER, LOW);
   valorInfra[0] = light[0] - ambientlight[0];
   valorInfra[1] = light[1] - ambientlight[1];

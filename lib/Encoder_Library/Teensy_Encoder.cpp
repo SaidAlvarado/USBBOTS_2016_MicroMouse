@@ -10,7 +10,7 @@
  volatile int8_t new_enc1 = 0, new_enc2 = 0;
  volatile int32_t rot1Steps = 0, rot2Steps = 0;
 // Square matrix for direction calculation.
- volatile int8_t QEM [16] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0};
+ volatile int8_t QEM [16] = {0,1,-1,0,-1,0,0,1,1,0,0,-1,0,-1,1,0};
 
 // Float speeds
 volatile float speed1 = 0.0;
@@ -44,8 +44,11 @@ void calculateSpeed(void){
   // If you are here, other interrupts are disable,
   // Which lets you access interrupt variables without
   // extra precaution
-  speed1 = ((rot1Steps - old_rot1Steps)*stepstoDistance)/(timerRotationTime)*1000000;
-  speed2 = ((rot2Steps - old_rot2Steps)*stepstoDistance)/(timerRotationTime)*1000000;
+  // speed1 = ((rot1Steps - old_rot1Steps)*stepstoDistance);///(timerRotationTime)*1000000;
+  // speed2 = ((rot2Steps - old_rot2Steps)*stepstoDistance);///(timerRotationTime)*1000000;
+
+  speed1 = (rot1Steps - old_rot1Steps);///(timerRotationTime)*1000000;
+  speed2 = (rot2Steps - old_rot2Steps);///(timerRotationTime)*1000000;
 
 
   old_rot1Steps = rot1Steps;
@@ -91,7 +94,7 @@ int getRot2Steps(void) {
   int rot;
 
   cli();
-  rot = rot2Steps/stepstoDistance;
+  rot = rot2Steps;
   sei();
   return rot;
 }
@@ -117,6 +120,27 @@ float getRot2Distance(void) {
   sei();
   return dist;
 }
+
+// Sets the current value of the rotaryEncoder1
+// counter in an interrupt safe way.
+void setRot1(int32_t steps) {
+
+  cli();
+  rot1Steps = steps;
+  old_rot1Steps = steps;
+  sei();
+}
+
+// Sets the current value of the rotaryEncoder2
+// counter in an interrupt safe way.
+void setRot2(int32_t steps) {
+
+  cli();
+  rot2Steps = steps;
+  old_rot2Steps = steps;
+  sei();
+}
+
 
 
 // Interrupt routines

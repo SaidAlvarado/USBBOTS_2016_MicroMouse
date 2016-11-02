@@ -7,6 +7,9 @@
 #define Teensy_Encoder_h
 #endif
 
+#include "Arduino.h"
+
+
 // Rotary encoder 1 phase A pin
 #define rotB1Pin 7
 // Rotary encoder 1 phase B pin
@@ -21,7 +24,7 @@
 #define DEMO 0
 
 // Constant used for the timer time
-#define timerRotationTime 1000000 // This equals 1 Second
+#define timerRotationTime 10000 // This equals 1 Second
 
 // Constant used for the conversion Steps to Distance in cm
 #define stepstoDistance 13.5
@@ -54,6 +57,14 @@ float getRot1Distance(void);
 // Return the current distance of the rotaryEncoder2
 // counter in an interrupt safe way.
 float getRot2Distance(void);
+
+// Set the current distance of the rotaryEncoder2
+// counter in an interrupt safe way.
+void setRot1(int32_t steps);
+
+// Set the current distance of the rotaryEncoder2
+// counter in an interrupt safe way.
+void setRot2(int32_t steps);
 
 //------------------Avaliable to user funcions----------------------------
 
