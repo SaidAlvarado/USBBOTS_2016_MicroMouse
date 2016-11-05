@@ -6,6 +6,11 @@
 float dist[4];
 uint16_t irval[4];
 
+extern float posErrorX, posErrorW;
+extern float posPwmX, posPwmW;
+extern int16_t leftBaseSpeed;
+extern int16_t rightBaseSpeed;
+
 void setup() {
 
   pinMode(BTN_SPEED, INPUT);   //Safe mode for onboard led
@@ -13,55 +18,119 @@ void setup() {
   irSensorSetup();
   motorSetup();
   gyroSetup();
-  // startController();
+  startController();
 
   motorLeftWrite(0);
   motorRightWrite(0);
   Serial.begin(115200);
 
-  setDistanceLeft(200);
+  // setDistanceLeft(2000);
+  // setSetPointV(3000);
+  // setSetPointW(0);
 }  // put your setup code here, to run once:
+
 
 uint8_t data;
 
 void loop() {
 
-
-    getIR(irval);
-
-
-    Serial2.print("FL = ");
-    Serial2.print(irval[0]);
+    Serial2.print("distanceLeft = ");
+    Serial2.print(getDistanceLeft());
     Serial2.print("   ");
 
-    Serial2.print("DL = ");
-    Serial2.print(irval[1]);
+    Serial2.print("posErrorX = ");
+    Serial2.print(posErrorX);
     Serial2.print("   ");
 
-    Serial2.print("DR = ");
-    Serial2.print(irval[2]);
+    Serial2.print("posPwmX = ");
+    Serial2.print(posPwmX);
     Serial2.print("   ");
 
-    Serial2.print("FR = ");
-    Serial2.print(irval[3]);
+    Serial2.print("posPwmW = ");
+    Serial2.print(posPwmW);
     Serial2.print("   ");
 
-    Serial2.print("Wall_left = ");
-    Serial2.print(isWallLeft());
+    Serial2.print("PWM_L = ");
+    Serial2.print(leftBaseSpeed);
     Serial2.print("   ");
 
-    Serial2.print("Wall_left = ");
-    Serial2.print(isWallRight());
+    Serial2.print("PWM_R = ");
+    Serial2.print(rightBaseSpeed);
     Serial2.print("   ");
 
-    Serial2.print("Front Wall = ");
-    Serial2.print(isWallFront());
-    Serial2.println("   ");
+    Serial2.print("Vmean = ");
+    Serial2.print(getVmean());
+    Serial2.println("mm/s      ");
+
+    if (getDistanceLeft() == 0) setSetPointV(0);
 
 
-    delay(200);
+    if (Serial2.available()) {
+
+        data = Serial2.read();
+
+        if (data == '0') {
+            setSetPointV(0);
+            setDistanceLeft(0);
+        }
+
+        if (data == '1') {
+            setSetPointV(3000);
+            setDistanceLeft(2000);
+        }
+
+        if (data == 'g') {
+            gyroCalibration();
+        }
+
+    }
+
+    delay(20);
+
+}
 
 
+
+/*===================================================================
+                Codigo de calibracion infrarrojo
+====================================================================*/
+
+    // getIR(irval);
+    //
+    // Serial2.print("FL = ");
+    // Serial2.print(irval[0]);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("DL = ");
+    // Serial2.print(irval[1]);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("DR = ");
+    // Serial2.print(irval[2]);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("FR = ");
+    // Serial2.print(irval[3]);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("Wall_left = ");
+    // Serial2.print(isWallLeft());
+    // Serial2.print("   ");
+    //
+    // Serial2.print("Wall_left = ");
+    // Serial2.print(isWallRight());
+    // Serial2.print("   ");
+    //
+    // Serial2.print("Front Wall = ");
+    // Serial2.print(isWallFront());
+    // Serial2.println("   ");
+
+
+
+
+/*===================================================================
+                    Codigo de chequeo de los encoders
+====================================================================*/
 
 
     // Serial2.print("VL = ");
@@ -115,8 +184,10 @@ void loop() {
     // }
 
 
-}
 
+/*===================================================================
+                Codigo que agarra el dataset de los motores
+====================================================================*/
 
 //Code that writes the data for the motor balancer
 //

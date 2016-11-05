@@ -11,7 +11,7 @@
 
 // Temporal interrupts
 IntervalTimer controllerTimer;
-#define interruptTiming 1000 //1000 -> 1ms
+#define interruptTiming 10000 //1000 -> 1ms
 
 // Encoder variables.
 #define counts_to_mm 1.35
@@ -25,8 +25,13 @@ float AngularSpeed;
 
 // Controller variables
 float setpointV, setpointW;
-float kpX = 2, kdX = 4;
-float kpW = 2, kdW = 4;
+float kpX = 10, kdX = 6; //9,9
+float kpW = 80, kdW = 30;
+float posErrorX, posErrorW;
+float oldPosErrorX, oldPosErrorW;
+float posPwmX, posPwmW;
+int16_t leftBaseSpeed;
+int16_t rightBaseSpeed;
 
 
 /* =====================================================================================
@@ -50,6 +55,7 @@ void startController(void){
 void temporalIntHandler(void){
     updateEncoderStatus();
     AngularSpeed = getAngularVelocity();
+    PD_controller();
 }
 
 
@@ -76,28 +82,25 @@ void updateEncoderStatus(void){
 //72mm wheel distance
 void PD_controller(void) // encoder PD controller
 {
-	int gyroFeedback;
-	int rotationalFeedback;
-	int sensorFeedback;
+	float gyroFeedback;
+	float rotationalFeedback;
+    float encoderFeedbackX;
+    float encoderFeedbackW;
+
 
     /* simple PD loop to generate base speed for both motors */
-	encoderFeedbackX = rightEncoderChange + leftEncoderChange;
-	encoderFeedbackW = rightEncoderChange - leftEncoderChange;
+	encoderFeedbackX = Vmean;
+	encoderFeedbackW = Wenc;
+	gyroFeedback = AngularSpeed;
+	// sensorFeedback = sensorError/a_scale;//have sensor error properly scale to fit the system
 
-	gyroFeedback = aSpeed/gyroFeedbackRatio; //gyroFeedbackRatio mentioned in curve turn lecture
-	sensorFeedback = sensorError/a_scale;//have sensor error properly scale to fit the system
+	rotationalFeedback = gyroFeedback;//encoderFeedbackW;
 
-	// if(onlyUseGyroFeedback)
-	// 	rotationalFeedback = gyroFeedback;
-	// else if(onlyUseEncoderFeedback)
-	// 	rotationalFeedback = encoderFeedbackW;
-	// else
-		rotationalFeedback = encoderFeedbackW + gyroFeedback;
-	    //if you use IR sensor as well, the line above will be rotationalFeedback = encoderFeedbackW + gyroFeedback + sensorFeedback;
-	    //make sure to check the sign of sensor error.
 
-	posErrorX += curSpeedX - encoderFeedbackX;
-	posErrorW += curSpeedW - rotationalFeedback;
+	posErrorX = setpointV - encoderFeedbackX;
+	posErrorW = setpointW - rotationalFeedback;
+	// posErrorX += curSpeedX - encoderFeedbackX;
+	// posErrorW += curSpeedW - rotationalFeedback;
 
 	posPwmX = kpX * posErrorX + kdX * (posErrorX - oldPosErrorX);
 	posPwmW = kpW * posErrorW + kdW * (posErrorW - oldPosErrorW);
@@ -105,8 +108,8 @@ void PD_controller(void) // encoder PD controller
 	oldPosErrorX = posErrorX;
 	oldPosErrorW = posErrorW;
 
-	int16_t leftBaseSpeed = posPwmX - posPwmW;
-	int16_t rightBaseSpeed = posPwmX + posPwmW;
+	leftBaseSpeed = (int16_t)(posPwmX + posPwmW);
+	rightBaseSpeed = (int16_t)(posPwmX - posPwmW);
 
 	motorLeftWrite(leftBaseSpeed);
 	motorRightWrite(rightBaseSpeed);
@@ -118,17 +121,17 @@ void PD_controller(void) // encoder PD controller
                                 GETS & SETS
 ====================================================================================== */
 
-int32_t getVR(void){
+float getVR(void){
 
     return VR;
 }
 
-int32_t getVL(void){
+float getVL(void){
 
     return VL;
 }
 
-int32_t getVmean(void){
+float getVmean(void){
 
     return Vmean;
 }
@@ -141,4 +144,25 @@ float getDistanceLeft(void){
 void setDistanceLeft(float dleft){
 
     distanceLeft = dleft;
+}
+
+//Controller setpoint
+void setSetPointV(float spv){
+
+    setpointV = spv;
+}
+
+float getSetPointV(void){
+
+    return setpointV;
+}
+
+float getSetPointW(void){
+
+    return setpointW;
+}
+
+void setSetPointW(float spw){
+
+    setpointW = spw;
 }
