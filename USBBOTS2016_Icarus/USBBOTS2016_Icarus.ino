@@ -8,8 +8,10 @@ uint16_t irval[4];
 
 extern float posErrorX, posErrorW;
 extern float posPwmX, posPwmW;
-extern int16_t leftBaseSpeed;
-extern int16_t rightBaseSpeed;
+extern int32_t leftBaseSpeed;
+extern int32_t rightBaseSpeed;
+
+
 
 void setup() {
 
@@ -34,33 +36,41 @@ uint8_t data;
 
 void loop() {
 
+
     Serial2.print("distanceLeft = ");
     Serial2.print(getDistanceLeft());
-    Serial2.print("   ");
+    Serial2.print("\t");
 
     Serial2.print("posErrorX = ");
     Serial2.print(posErrorX);
-    Serial2.print("   ");
+    Serial2.print("\t");
 
     Serial2.print("posPwmX = ");
     Serial2.print(posPwmX);
-    Serial2.print("   ");
+    Serial2.print("\t");
 
     Serial2.print("posPwmW = ");
     Serial2.print(posPwmW);
-    Serial2.print("   ");
+    Serial2.print("\t");
 
     Serial2.print("PWM_L = ");
     Serial2.print(leftBaseSpeed);
-    Serial2.print("   ");
+    Serial2.print("\t");
 
     Serial2.print("PWM_R = ");
     Serial2.print(rightBaseSpeed);
-    Serial2.print("   ");
+    Serial2.print("\t");
 
     Serial2.print("Vmean = ");
     Serial2.print(getVmean());
-    Serial2.println("mm/s      ");
+    Serial2.print("mm/s    ");
+
+
+    Serial2.print("   ");
+    Serial2.print(getRot1Steps());
+    Serial2.print(",");
+    Serial2.print(getRot2Steps());
+    Serial2.println("");
 
     if (getDistanceLeft() == 0) setSetPointV(0);
 

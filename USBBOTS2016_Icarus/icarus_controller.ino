@@ -11,10 +11,10 @@
 
 // Temporal interrupts
 IntervalTimer controllerTimer;
-#define interruptTiming 10000 //1000 -> 1ms
+#define interruptTiming 1000 //1000 -> 1ms
 
 // Encoder variables.
-#define counts_to_mm 1.35
+#define counts_to_mm 2.10    //1.35
 int32_t  enc_count_left, enc_count_right;
 int32_t  enc_count_left_old, enc_count_right_old;
 float VL, VR, Vmean, Wenc; // mm/s
@@ -25,13 +25,13 @@ float AngularSpeed;
 
 // Controller variables
 float setpointV, setpointW;
-float kpX = 10, kdX = 6; //9,9
-float kpW = 80, kdW = 30;
+float kpX = 20, kdX = 6; //9,9
+float kpW = 80, kdW = 50;
 float posErrorX, posErrorW;
 float oldPosErrorX, oldPosErrorW;
 float posPwmX, posPwmW;
-int16_t leftBaseSpeed;
-int16_t rightBaseSpeed;
+int32_t leftBaseSpeed;
+int32_t rightBaseSpeed;
 
 
 /* =====================================================================================
@@ -79,6 +79,7 @@ void updateEncoderStatus(void){
     else distanceLeft = 0;
 }
 
+//  4362.5  1976
 //72mm wheel distance
 void PD_controller(void) // encoder PD controller
 {
@@ -102,14 +103,20 @@ void PD_controller(void) // encoder PD controller
 	// posErrorX += curSpeedX - encoderFeedbackX;
 	// posErrorW += curSpeedW - rotationalFeedback;
 
-	posPwmX = kpX * posErrorX + kdX * (posErrorX - oldPosErrorX);
-	posPwmW = kpW * posErrorW + kdW * (posErrorW - oldPosErrorW);
+	posPwmX = kpX * posErrorX + kdX * (posErrorX - oldPosErrorX);// * (interruptTiming/1000) / 1000;
+	posPwmW = kpW * posErrorW + kdW * (posErrorW - oldPosErrorW);// * (interruptTiming/1000) / 1000;
+
+    if (posPwmX >= 35000)  posPwmX = 35000;
+    if (posPwmX <= -35000) posPwmX = -35000;
+
+    // if (posPwmW >= 5000)  posPwmW = 5000;
+    // if (posPwmW <= -5000) posPwmW = -5000;
 
 	oldPosErrorX = posErrorX;
 	oldPosErrorW = posErrorW;
 
-	leftBaseSpeed = (int16_t)(posPwmX + posPwmW);
-	rightBaseSpeed = (int16_t)(posPwmX - posPwmW);
+	leftBaseSpeed = (int32_t)(posPwmX - posPwmW);
+	rightBaseSpeed = (int32_t)(posPwmX + posPwmW);
 
 	motorLeftWrite(leftBaseSpeed);
 	motorRightWrite(rightBaseSpeed);
