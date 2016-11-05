@@ -24,7 +24,7 @@
 #define DEMO 0
 
 // Constant used for the timer time
-#define timerRotationTime 10000 // This equals 1 Second
+#define timerRotationTime 1000 // This equals 1 Second
 
 // Constant used for the conversion Steps to Distance in cm
 #define stepstoDistance 13.5

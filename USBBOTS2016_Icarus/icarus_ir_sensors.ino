@@ -5,6 +5,7 @@
 
 #include <ADC.h>
 #include "icarus_pinout.h"
+#include "math.h"
 
 
 // Class Variable for ADC hardware access.
@@ -14,6 +15,26 @@ ADC *adc = new ADC();
 uint16_t valorInfra[4];
 uint16_t ambientlight[4];
 uint16_t light[4];
+
+//variables de ajuste de los sensores
+float FL[3] = {6790, 105098, 0.28172};
+float DL[3] = {3555, 58459, 0.34614};
+float DR[3] = {5853, 7247, 0.67896};
+float FR[3] = {12850, 133321, 0.26744};
+
+//Distancias medidas
+float distancias[4];
+
+//Wall Threshold
+#define right_wall_th 5000
+#define left_wall_th  8000
+#define front_wall_lf_th 3000
+#define front_wall_lf_close_th 25000
+#define front_wall_rg_th 5500
+#define front_wall_rg_close_th 35000
+
+
+
 
 
 /* =====================================================================================
@@ -45,18 +66,18 @@ void irSensorSetup(void) {
 // FUnction that access the hardware
 void irRead(void) {
 
-  ambientlight[0] = adc->analogRead(IR_FRONT_RIGHT);
-  ambientlight[1] = adc->analogRead(IR_DIAG_RIGHT);
-  ambientlight[2] = adc->analogRead(IR_DIAG_LEFT);
-  ambientlight[3] = adc->analogRead(IR_FRONT_LEFT);
+  ambientlight[0] = adc->analogRead(IR_FRONT_LEFT);
+  ambientlight[1] = adc->analogRead(IR_DIAG_LEFT);
+  ambientlight[2] = adc->analogRead(IR_DIAG_RIGHT);
+  ambientlight[3] = adc->analogRead(IR_FRONT_RIGHT);
   // delayMicroseconds(10);
   digitalWriteFast(IR_EMITTER, HIGH);
   // delayMicroseconds(10);
   delayMicroseconds(50);
-  light[0] = adc->analogRead(IR_FRONT_RIGHT);
-  light[1] = adc->analogRead(IR_DIAG_RIGHT);
-  light[2] = adc->analogRead(IR_DIAG_LEFT);
-  light[3] = adc->analogRead(IR_FRONT_LEFT);
+  light[0] = adc->analogRead(IR_FRONT_LEFT);
+  light[1] = adc->analogRead(IR_DIAG_LEFT);
+  light[2] = adc->analogRead(IR_DIAG_RIGHT);
+  light[3] = adc->analogRead(IR_FRONT_RIGHT);
   digitalWriteFast(IR_EMITTER, LOW);
   valorInfra[0] = light[0] - ambientlight[0];
   valorInfra[1] = light[1] - ambientlight[1];
@@ -73,4 +94,27 @@ void getIR(uint16_t *valores) {
     valores[1] = valorInfra[1];
     valores[2] = valorInfra[2];
     valores[3] = valorInfra[3];
+}
+
+// Ge distance
+uint8_t isWallRight(void){
+
+    return right_wall_th < valorInfra[2];
+}
+
+
+uint8_t isWallLeft(void){
+
+    return left_wall_th < valorInfra[1];
+}
+
+
+uint8_t isWallFront(void){
+
+
+    if (front_wall_lf_close_th < valorInfra[0] && front_wall_rg_close_th < valorInfra[3] ) return 2;
+    if (front_wall_lf_th < valorInfra[0] && front_wall_rg_th < valorInfra[3] ) return 1;
+    return 0;
+
+
 }

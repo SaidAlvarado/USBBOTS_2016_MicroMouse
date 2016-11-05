@@ -10,7 +10,7 @@
  volatile int8_t new_enc1 = 0, new_enc2 = 0;
  volatile int32_t rot1Steps = 0, rot2Steps = 0;
 // Square matrix for direction calculation.
- volatile int8_t QEM [16] = {0,1,-1,0,-1,0,0,1,1,0,0,-1,0,-1,1,0};
+ volatile int8_t QEM [16] = {0,-1,+1,0,+1,0,0,-1,-1,0,0,+1,0,+1,-1,0};
 
 // Float speeds
 volatile float speed1 = 0.0;
@@ -35,7 +35,7 @@ void configureEncoderLib(void){
   attachInterrupt(rotB2Pin,ISRrotB2Change, CHANGE);
 
   // Configure a timer to take measurements every certain amount of time
-  rotationTimer.begin(calculateSpeed, timerRotationTime);
+  // rotationTimer.begin(calculateSpeed, timerRotationTime);
 }
 
 // Calculates both speeds from the encoders
