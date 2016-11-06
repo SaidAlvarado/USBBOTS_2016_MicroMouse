@@ -211,14 +211,14 @@
 // }
 //
 //
-// int needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd)//speed are in encoder counts/ms, dist is in encoder counts
+// float needToDecelerate(float dist, float curSpd, float endSpd)//speed are in encoder counts/ms, dist is in encoder counts
 // {
 // 	if (curSpd<0) curSpd = -curSpd;
 // 	if (endSpd<0) endSpd = -endSpd;
 // 	if (dist<0) dist = 1;//-dist;
 // 	if (dist == 0) dist = 1;  //prevent divide by 0
 //
-// 	return (abs(counts_to_speed((curSpd*curSpd - endSpd*endSpd)*100/(double)dist/4/2))); //dist_counts_to_mm(dist)/2);
+// 	return (abs((curSpd*curSpd - endSpd*endSpd)/dist/2)); //dist_counts_to_mm(dist)/2);
 // 	//calculate deceleration rate needed with input distance, input current speed and input targetspeed to determind if the deceleration is needed
 // 	//use equation 2*a*S = Vt^2 - V0^2  ==>  a = (Vt^2-V0^2)/2/S
 // 	//because the speed is the sum of left and right wheels(which means it's doubled), that's why there is a "/4" in equation since the square of 2 is 4

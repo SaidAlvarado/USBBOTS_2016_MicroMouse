@@ -22,16 +22,29 @@ float distanceLeft;
 
 // Gyroscope variables
 float AngularSpeed;
+float angleLeft;
 
 // Controller variables
 float setpointV, setpointW;
-float kpX = 20, kdX = 6; //9,9
-float kpW = 80, kdW = 50;
+float kpX = 20, kdX = 8; //9,9
+float kpW = 80, kdW = 70;
 float posErrorX, posErrorW;
 float oldPosErrorX, oldPosErrorW;
 float posPwmX, posPwmW;
 int32_t leftBaseSpeed;
 int32_t rightBaseSpeed;
+
+// Acceleration profile variables
+float targetSpeedV;
+float targetSpeedW;
+float currentSpeedV;
+float currentSpeedW;
+
+//Speed variables
+#define moveSpeed 3000
+#define inplace_turn_speed 500
+#define AccelerationV 200       // mm/s^2
+#define AccelerationW 50        // degrees/s^2
 
 
 /* =====================================================================================
@@ -54,9 +67,54 @@ void startController(void){
 // Runs the PD controller
 void temporalIntHandler(void){
     updateEncoderStatus();
+    // updateCurrentSpeed();
     AngularSpeed = getAngularVelocity();
     PD_controller();
 }
+
+
+void updateCurrentSpeed(void)
+{
+	if(currentSpeedV < targetSpeedV)
+	{
+		currentSpeedV += (float)AccelerationV * (interruptTiming/1000) / 1000;
+		if(currentSpeedV > targetSpeedV)
+			currentSpeedV = targetSpeedV;
+	}
+	else if(currentSpeedV > targetSpeedV)
+	{
+		currentSpeedV -= (float)AccelerationV * (interruptTiming/1000) / 1000;
+		if(currentSpeedV < targetSpeedV)
+			currentSpeedV = targetSpeedV;
+	}
+	if(currentSpeedW < targetSpeedW)
+	{
+		currentSpeedW += AccelerationW * (interruptTiming/1000) / 1000;
+		if(currentSpeedW > targetSpeedW)
+			currentSpeedW = targetSpeedW;
+	}
+	else if(currentSpeedW > targetSpeedW)
+	{
+		currentSpeedW -= AccelerationV * (interruptTiming/1000) / 1000;
+		if(currentSpeedW < targetSpeedW)
+			currentSpeedW = targetSpeedW;
+	}
+}
+
+
+float needToDecelerate(float dist, float curSpd, float endSpd)//speed are in encoder counts/ms, dist is in encoder counts
+{
+	if (curSpd<0) curSpd = -curSpd;
+	if (endSpd<0) endSpd = -endSpd;
+	if (dist<0) dist = 1;//-dist;
+	if (dist == 0) dist = 1;  //prevent divide by 0
+
+	return (abs((curSpd*curSpd - endSpd*endSpd)/dist/2)); //dist_counts_to_mm(dist)/2);
+	//calculate deceleration rate needed with input distance, input current speed and input targetspeed to determind if the deceleration is needed
+	//use equation 2*a*S = Vt^2 - V0^2  ==>  a = (Vt^2-V0^2)/2/S
+	//because the speed is the sum of left and right wheels(which means it's doubled), that's why there is a "/4" in equation since the square of 2 is 4
+}
+
 
 
 void updateEncoderStatus(void){
@@ -93,6 +151,11 @@ void PD_controller(void) // encoder PD controller
 	encoderFeedbackX = Vmean;
 	encoderFeedbackW = Wenc;
 	gyroFeedback = AngularSpeed;
+
+    // integrate the angle
+    if (setpointW != 0) angleLeft -= gyroFeedback * (interruptTiming/1000) / 1000;  // (interruptTiming/1000) / 1000 this is deltaT in seconds
+    else angleLeft = 0;
+    //
 	// sensorFeedback = sensorError/a_scale;//have sensor error properly scale to fit the system
 
 	rotationalFeedback = gyroFeedback;//encoderFeedbackW;
@@ -100,8 +163,8 @@ void PD_controller(void) // encoder PD controller
 
 	posErrorX = setpointV - encoderFeedbackX;
 	posErrorW = setpointW - rotationalFeedback;
-	// posErrorX += curSpeedX - encoderFeedbackX;
-	// posErrorW += curSpeedW - rotationalFeedback;
+	// posErrorX = currentSpeedV - encoderFeedbackX;
+	// posErrorW = currentSpeedW - rotationalFeedback;
 
 	posPwmX = kpX * posErrorX + kdX * (posErrorX - oldPosErrorX);// * (interruptTiming/1000) / 1000;
 	posPwmW = kpW * posErrorW + kdW * (posErrorW - oldPosErrorW);// * (interruptTiming/1000) / 1000;
@@ -153,6 +216,17 @@ void setDistanceLeft(float dleft){
     distanceLeft = dleft;
 }
 
+float getAngleLeft(void){
+
+    return angleLeft;
+}
+
+void setAngleLeft(float aleft){
+
+    angleLeft = aleft;
+}
+
+
 //Controller setpoint
 void setSetPointV(float spv){
 
@@ -173,3 +247,25 @@ void setSetPointW(float spw){
 
     setpointW = spw;
 }
+
+// Acceleration profile variables
+void setTargetSpeedV(float tspv){
+
+    targetSpeedV = tspv;
+}
+
+void setTargetSpeedW(float tspw){
+
+    targetSpeedW = tspw;
+}
+
+// // Acceleration profile variables
+// float getCurrentSpeedV(void){
+//
+//     targetSpeedV;
+// }
+//
+// float getCurrentSpeedW(void){
+//
+//     targetSpeedW = tspw;
+// }
