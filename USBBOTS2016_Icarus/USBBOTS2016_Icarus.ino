@@ -12,6 +12,8 @@ extern float posPwmX, posPwmW;
 extern int32_t leftBaseSpeed;
 extern int32_t rightBaseSpeed;
 extern float AngularSpeed;
+#define calibrator 0.6 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
+#define calibratorA 0.9 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
 
 // Variables para chequear el flood and fill
 #define NUMCELLS 256
@@ -21,12 +23,25 @@ extern uint8_t  maps[NUMCELLS];
 // Path generator variable
 #define MAX_PATH_LENGTH 150
 char path_s[MAX_PATH_LENGTH];
+// char path_s[MAX_PATH_LENGTH] = "FRFFS";
 
 uint8_t cell_x, cell_y;
 uint8_t goal_x, goal_y;
-
 char next_step;
+uint8_t start = 0;
 
+
+// Variables finales de estado del robot
+uint8_t mapeo, corrida;
+
+
+// External access for distance
+extern float ir_sensor_distances[4];
+extern float sensorError;
+
+// Sequencer variables
+uint8_t done = 0;
+uint8_t path_index = 0;
 
 void setup() {
 
@@ -35,11 +50,13 @@ void setup() {
   irSensorSetup();
   motorSetup();
   gyroSetup();
-  // startController();
+  beginController();
 
   motorLeftWrite(0);
   motorRightWrite(0);
   Serial.begin(115200);
+
+
 
   // setDistanceLeft(2000);
   // setSetPointV(3000);
@@ -51,6 +68,16 @@ void setup() {
   cell_x = 0;
   cell_y = 0;
 
+
+ Serial2.println("Esperando...");
+  // Si se presiona el boton empieza el mapeo.
+  while(digitalRead(BTN_SPEED));
+
+  mapeo = 1;
+
+  Serial2.println("Empezo el recorrido");
+  delay(5000);
+
 }  // put your setup code here, to run once:
 
 
@@ -58,178 +85,299 @@ uint8_t data;
 
 void loop() {
 
-        // getIR(dist);
-        getIRDistance(dist);
 
-        if (Serial2.available()) {
+    if(mapeo == 1){
+        if (done == 0){
+            updateMaze(cell_x, cell_y);
+            floodAndFill(cell_x, cell_y, goal_x, goal_y, path_s);
+            next_step = path_s[0];
 
-            data = Serial2.read();
-
-            if (data == '0') {
-
-                Serial2.print("Celda = (");
-                Serial2.print(cell_y);
-                Serial2.print(",");
-                Serial2.print(cell_x);
-                Serial2.print(")"); Serial2.print("  Orientacion = "); Serial2.println(getMouseOrientation());
-
-                Serial2.print("Wall_left = ");
-                Serial2.print(isWallLeft());
-                Serial2.print("   ");
-
-                Serial2.print("Wall_Right = ");
-                Serial2.print(isWallRight());
-                Serial2.print("   ");
-
-                Serial2.print("Front Wall = ");
-                Serial2.print(isWallFront());
-                Serial2.println("   ");
-
-                Serial2.println("bup");
-                updateMaze(cell_x, cell_y);
-                Serial2.println("aup");
-
-                Serial2.println("bfaf");
-                floodAndFill(cell_x, cell_y, goal_x, goal_y, path_s);
-                Serial2.println("afaf");
-
-                next_step = path_s[0];
-
-                if (next_step == 'F'){
-                    if (getMouseOrientation() == 'N') { cell_x ++; setMouseOrientation('N');}
-                    else if (getMouseOrientation() == 'E') { cell_y ++; setMouseOrientation('E');}
-                    else if (getMouseOrientation() == 'W') { cell_y --; setMouseOrientation('W');}
-                    else if (getMouseOrientation() == 'S') { cell_x --; setMouseOrientation('S');}
-                }
-
-                if (next_step == 'L'){
-                    if (getMouseOrientation() == 'N') { setMouseOrientation('W');}
-                    else if (getMouseOrientation() == 'E') { setMouseOrientation('N');}
-                    else if (getMouseOrientation() == 'W') { setMouseOrientation('S');}
-                    else if (getMouseOrientation() == 'S') { setMouseOrientation('E');}
-                }
-
-                if (next_step == 'R'){
-                    if (getMouseOrientation() == 'N') { setMouseOrientation('E');}
-                    else if (getMouseOrientation() == 'E') { setMouseOrientation('S');}
-                    else if (getMouseOrientation() == 'W') { setMouseOrientation('N');}
-                    else if (getMouseOrientation() == 'S') { setMouseOrientation('W');}
-                }
-
-                if (next_step == 'G'){
-                    if (getMouseOrientation() == 'N') { setMouseOrientation('S');}
-                    else if (getMouseOrientation() == 'E') { setMouseOrientation('W');}
-                    else if (getMouseOrientation() == 'W') { setMouseOrientation('E');}
-                    else if (getMouseOrientation() == 'S') { setMouseOrientation('N');}
-                }
-
-                if (next_step == 'X'){
-                    Serial2.println("[-] Error, Path not found");
-                }
+            Serial2.print("Celda = (");
+            Serial2.print(cell_y);
+            Serial2.print(",");
+            Serial2.print(cell_x);
+            Serial2.print(")"); Serial2.print("  Orientacion = "); Serial2.println(getMouseOrientation());
 
 
-                // Imprimimos la informacion
+            Serial2.print("WL = ");
+            Serial2.print(isWallLeft());
+            Serial2.print("   ");
 
-                Serial2.println("");
-                Serial2.println("Laberinto =");
-                for (int i = 0; i < 256; i++) {
+            Serial2.print("WR = ");
+            Serial2.print(isWallRight());
+            Serial2.print("   ");
 
-                    if (i%16 == 0) Serial2.println();
+            Serial2.print("WF = ");
+            Serial2.print(isWallFront());
+            Serial2.println("   ");
 
-                    Serial2.print(maze[i]);
-                    Serial2.print("\t");
-                    delay(3);
+            // Imprimimos la informacion
 
-                }
+            Serial2.println("");
+            Serial2.println("Laberinto =");
+            for (int i = 0; i < 256; i++) {
 
-                Serial2.println("");
-                Serial2.println("Flood and Fill =");
-                for (int i = 0; i < 256; i++) {
+                if (i%16 == 0) Serial2.println();
 
-                    if (i%16 == 0) Serial2.println();
-
-                    Serial2.print(maps[i]);
-                    Serial2.print("\t");
-                    delay(3);
-
-                }
-
-                Serial2.println();
-                Serial2.print("Path = ");
-                for (int i = 0; i < MAX_PATH_LENGTH; i++) Serial2.print(path_s[i]);
-
+                Serial2.print(maze[i]);
+                Serial2.print("\t");
+                delay(3);
+    
             }
 
-            if (data == '1') {
 
-                Serial2.print("Celda = (");
-                Serial2.print(cell_y);
-                Serial2.print(",");
-                Serial2.print(cell_x);
-                Serial2.print(")"); Serial2.print("  Orientacion = "); Serial2.println(getMouseOrientation());
-
-                Serial2.print("Wall_left = ");
-                Serial2.print(isWallLeft());
-                Serial2.print("   ");
-
-                Serial2.print("Wall_Right = ");
-                Serial2.print(isWallRight());
-                Serial2.print("   ");
-
-                Serial2.print("Front Wall = ");
-                Serial2.print(isWallFront());
-                Serial2.println("   ");
-
-                Serial2.println("bup");
-                updateMaze(cell_x, cell_y);
-                Serial2.println("aup");
-
-                // Imprimimos la informacion
-
-                Serial2.println("");
-                Serial2.println("Laberinto =");
-                for (int i = 0; i < 256; i++) {
-
-                    if (i%16 == 0) Serial2.println();
-
-                    Serial2.print(maze[i]);
-                    Serial2.print("\t");
-                    delay(3);
-
-                }
-
-                Serial2.println("bfaf");
-                floodAndFill(cell_x, cell_y, goal_x, goal_y, path_s);
-                Serial2.println("afaf");
+            Serial2.print("Path = ");
+            for (int i = 0; i < MAX_PATH_LENGTH; i++) Serial2.print(path_s[i]);
+            Serial2.println();
 
 
+            if (next_step == 'F'){
+                if (getMouseOrientation() == 'N') { cell_x ++; setMouseOrientation('N');}
+                else if (getMouseOrientation() == 'E') { cell_y ++; setMouseOrientation('E');}
+                else if (getMouseOrientation() == 'W') { cell_y --; setMouseOrientation('W');}
+                else if (getMouseOrientation() == 'S') { cell_x --; setMouseOrientation('S');}
+            }
 
-                Serial2.println("");
-                Serial2.println("Flood and Fill =");
-                for (int i = 0; i < 256; i++) {
+            if (next_step == 'L'){
+                if (getMouseOrientation() == 'N') { setMouseOrientation('W');}
+                else if (getMouseOrientation() == 'E') { setMouseOrientation('N');}
+                else if (getMouseOrientation() == 'W') { setMouseOrientation('S');}
+                else if (getMouseOrientation() == 'S') { setMouseOrientation('E');}
+            }
 
-                    if (i%16 == 0) Serial2.println();
+            if (next_step == 'R'){
+                if (getMouseOrientation() == 'N') { setMouseOrientation('E');}
+                else if (getMouseOrientation() == 'E') { setMouseOrientation('S');}
+                else if (getMouseOrientation() == 'W') { setMouseOrientation('N');}
+                else if (getMouseOrientation() == 'S') { setMouseOrientation('W');}
+            }
 
-                    Serial2.print(maps[i]);
-                    Serial2.print("\t");
-                    delay(3);
+            if (next_step == 'G'){
+                if (getMouseOrientation() == 'N') { setMouseOrientation('S');}
+                else if (getMouseOrientation() == 'E') { setMouseOrientation('W');}
+                else if (getMouseOrientation() == 'W') { setMouseOrientation('E');}
+                else if (getMouseOrientation() == 'S') { setMouseOrientation('N');}
+            }
 
-                }
+            if (next_step == 'X'){
+                Serial2.println("[-] Error, Path not found");
+            }
 
-                Serial2.println();
-                Serial2.print("Path = ");
-                for (int i = 0; i < MAX_PATH_LENGTH; i++) Serial2.print(path_s[i]);
-
+            if (next_step == 'S'){
+                Serial2.println("Laberinto listo");
+                mapeo = 0;
+                corrida = 1;
             }
 
 
 
 
+            delay(3000);
 
-
+            executeStep(next_step);
         }
 
-        delay(200);
+
+        if (done == 1) executeStep(next_step);
+
+    }
+
+
+    if(corrida == 1){;}
+}
+
+// Executes one or more steps of the planned path, returns the index of the array where it ends
+uint8_t executeStep(char run_path){
+
+
+    if (run_path == 'R'){
+
+        // If not currently running, start a new command
+        if (done == 0) {
+            // Turn 90 degree over your own axis.
+            startController();
+            stopIRcentering();
+            setSetPointW(-500);
+            setAngleLeft(-90*calibratorA);
+            setSetPointV(0);
+            done = 1;   //set the flag that a new command started
+        }
+        else {
+            if (abs(getAngleLeft()) < 10.0 ) {
+                setSetPointW(0);
+                stopController();
+                stopIRcentering();
+                done = 0;
+            }
+        }
+    }
+
+
+    if (run_path == 'G'){
+
+        // If not currently running, start a new command
+        if (done == 0) {
+            // Turn 90 degree over your own axis.
+            startController();
+            stopIRcentering();
+            setSetPointW(500);
+            setAngleLeft(180*calibratorA);
+            setSetPointV(0);
+            done = 1;   //set the flag that a new command started
+        }
+        else {
+            if (abs(getAngleLeft()) < 10.0 ) {
+                setSetPointW(0);
+                stopController();
+                stopIRcentering();
+                done = 0;
+
+            }
+        }
+    }
+
+        if (run_path == 'L'){
+
+            // If not currently running, start a new command
+            if (done == 0) {
+                // Turn 90 degree over your own axis.
+                startController();
+                stopIRcentering();
+                setSetPointW(500);
+                setAngleLeft(90*calibratorA);
+                setSetPointV(0);
+                done = 1;   //set the flag that a new command started
+            }
+            else {
+                if (abs(getAngleLeft()) < 10.0 ) {
+                    setSetPointW(0);
+                    stopController();
+                    stopIRcentering();
+                    done = 0;
+
+                }
+            }
+        }
+
+
+    if (run_path == 'F'){
+
+        // If not currently running, start a new command
+        if (done == 0) {
+            // Turn 90 degree over your own axis.
+            startController();
+            startIRcentering();
+            setSetPointV(2000);
+            setSetPointW(0);
+            setDistanceLeft(180*calibrator);
+            done = 1;   //set the flag that a new command started
+        }
+        else {
+            // if (isWallFront() == 1 && (getDistanceLeft() > 70) ) setDistanceLeft(70);
+            if (isWallFront() == 2 && (getDistanceLeft() > 40) ) setDistanceLeft(40);
+            // if (isWallLeft() == 0 && (getDistanceLeft() > 80) ) setDistanceLeft(80);
+            // if (isWallRight() == 0 && (getDistanceLeft() > 80) ) setDistanceLeft(80);
+            if (getDistanceLeft() == 0) {
+                setSetPointV(0);
+                done = 0;
+                // stopController();
+                // stopIRcentering();
+            }
+        }
+    }
+
+}
+
+/*===================================================================
+                Ruta Predeterminada
+====================================================================*/
+
+        //
+        //
+        // Serial2.print("disLeft = ");
+        // Serial2.print(getDistanceLeft());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("angLeft = ");
+        // Serial2.print(getAngleLeft());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("sensorError = ");
+        // Serial2.print(sensorError);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("posErrorW = ");
+        // Serial2.print(posErrorW);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("posPwmW = ");
+        // Serial2.print(posPwmW);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("WallL = ");
+        // Serial2.print(isWallLeft());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("WallR = ");
+        // Serial2.print(isWallRight());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("WallFr = ");
+        // Serial2.print(isWallFront());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("DL = ");
+        // Serial2.print(ir_sensor_distances[1]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("DR = ");
+        // Serial2.print(ir_sensor_distances[2]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Next = ");
+        // Serial2.print(path_s[path_index]);
+        // Serial2.print(path_index);
+        // Serial2.print(" ");
+        // if (done == 1) Serial2.print("GOING");
+        // if (done == 0) Serial2.print("DONE");
+        // Serial2.println("   ");
+        //
+        // if (done == 0 && start == 1) executeStep(path_s);
+        //
+        // if (done == 1) executeStep(path_s);
+        //
+        // if (Serial2.available()) {
+        //
+        //     data = Serial2.read();
+        //
+        //     //Stop everything
+        //     if (data == '0') {
+        //         setSetPointV(0);
+        //         setSetPointW(0);
+        //         setDistanceLeft(0);
+        //         path_index = 0;
+        //         start = 0;
+        //     }
+        //
+        //     if (data == '1') {
+        //         start = 1;
+        //     }
+        //
+        //     if (data == 'g') {
+        //         gyroCalibration();
+        //     }
+        //
+        // }
+        //
+        // delay(20);
+        //
+
+
+
+/*===================================================================
+                Controller tester
+====================================================================*/
+
 
     //
     // Serial2.print("distanceLeft = ");
@@ -298,15 +446,184 @@ void loop() {
 
     // delay(20);
 
-}
 
+/*===================================================================
+                Flood and Fill paso a paso
+====================================================================*/
+
+// // getIR(dist);
+// getIRDistance(dist);
+//
+// if (Serial2.available()) {
+//
+//     data = Serial2.read();
+//
+//     if (data == '0') {
+//
+//         Serial2.print("Celda = (");
+//         Serial2.print(cell_y);
+//         Serial2.print(",");
+//         Serial2.print(cell_x);
+//         Serial2.print(")"); Serial2.print("  Orientacion = "); Serial2.println(getMouseOrientation());
+//
+//         Serial2.print("Wall_left = ");
+//         Serial2.print(isWallLeft());
+//         Serial2.print("   ");
+//
+//         Serial2.print("Wall_Right = ");
+//         Serial2.print(isWallRight());
+//         Serial2.print("   ");
+//
+//         Serial2.print("Front Wall = ");
+//         Serial2.print(isWallFront());
+//         Serial2.println("   ");
+//
+//         Serial2.println("bup");
+//         updateMaze(cell_x, cell_y);
+//         Serial2.println("aup");
+//
+//         Serial2.println("bfaf");
+//         floodAndFill(cell_x, cell_y, goal_x, goal_y, path_s);
+//         Serial2.println("afaf");
+//
+//         next_step = path_s[0];
+//
+//         if (next_step == 'F'){
+//             if (getMouseOrientation() == 'N') { cell_x ++; setMouseOrientation('N');}
+//             else if (getMouseOrientation() == 'E') { cell_y ++; setMouseOrientation('E');}
+//             else if (getMouseOrientation() == 'W') { cell_y --; setMouseOrientation('W');}
+//             else if (getMouseOrientation() == 'S') { cell_x --; setMouseOrientation('S');}
+//         }
+//
+//         if (next_step == 'L'){
+//             if (getMouseOrientation() == 'N') { setMouseOrientation('W');}
+//             else if (getMouseOrientation() == 'E') { setMouseOrientation('N');}
+//             else if (getMouseOrientation() == 'W') { setMouseOrientation('S');}
+//             else if (getMouseOrientation() == 'S') { setMouseOrientation('E');}
+//         }
+//
+//         if (next_step == 'R'){
+//             if (getMouseOrientation() == 'N') { setMouseOrientation('E');}
+//             else if (getMouseOrientation() == 'E') { setMouseOrientation('S');}
+//             else if (getMouseOrientation() == 'W') { setMouseOrientation('N');}
+//             else if (getMouseOrientation() == 'S') { setMouseOrientation('W');}
+//         }
+//
+//         if (next_step == 'G'){
+//             if (getMouseOrientation() == 'N') { setMouseOrientation('S');}
+//             else if (getMouseOrientation() == 'E') { setMouseOrientation('W');}
+//             else if (getMouseOrientation() == 'W') { setMouseOrientation('E');}
+//             else if (getMouseOrientation() == 'S') { setMouseOrientation('N');}
+//         }
+//
+//         if (next_step == 'X'){
+//             Serial2.println("[-] Error, Path not found");
+//         }
+//
+//
+//         // Imprimimos la informacion
+//
+//         Serial2.println("");
+//         Serial2.println("Laberinto =");
+//         for (int i = 0; i < 256; i++) {
+//
+//             if (i%16 == 0) Serial2.println();
+//
+//             Serial2.print(maze[i]);
+//             Serial2.print("\t");
+//             delay(3);
+//
+//         }
+//
+//         Serial2.println("");
+//         Serial2.println("Flood and Fill =");
+//         for (int i = 0; i < 256; i++) {
+//
+//             if (i%16 == 0) Serial2.println();
+//
+//             Serial2.print(maps[i]);
+//             Serial2.print("\t");
+//             delay(3);
+//
+//         }
+//
+//         Serial2.println();
+//         Serial2.print("Path = ");
+//         for (int i = 0; i < MAX_PATH_LENGTH; i++) Serial2.print(path_s[i]);
+//
+//     }
+//
+//     if (data == '1') {
+//
+//         Serial2.print("Celda = (");
+//         Serial2.print(cell_y);
+//         Serial2.print(",");
+//         Serial2.print(cell_x);
+//         Serial2.print(")"); Serial2.print("  Orientacion = "); Serial2.println(getMouseOrientation());
+//
+//         Serial2.print("Wall_left = ");
+//         Serial2.print(isWallLeft());
+//         Serial2.print("   ");
+//
+//         Serial2.print("Wall_Right = ");
+//         Serial2.print(isWallRight());
+//         Serial2.print("   ");
+//
+//         Serial2.print("Front Wall = ");
+//         Serial2.print(isWallFront());
+//         Serial2.println("   ");
+//
+//         Serial2.println("bup");
+//         updateMaze(cell_x, cell_y);
+//         Serial2.println("aup");
+//
+//         // Imprimimos la informacion
+//
+//         Serial2.println("");
+//         Serial2.println("Laberinto =");
+//         for (int i = 0; i < 256; i++) {
+//
+//             if (i%16 == 0) Serial2.println();
+//
+//             Serial2.print(maze[i]);
+//             Serial2.print("\t");
+//             delay(3);
+//
+//         }
+//
+//         Serial2.println("bfaf");
+//         floodAndFill(cell_x, cell_y, goal_x, goal_y, path_s);
+//         Serial2.println("afaf");
+//
+//
+//
+//         Serial2.println("");
+//         Serial2.println("Flood and Fill =");
+//         for (int i = 0; i < 256; i++) {
+//
+//             if (i%16 == 0) Serial2.println();
+//
+//             Serial2.print(maps[i]);
+//             Serial2.print("\t");
+//             delay(3);
+//
+//         }
+//
+//         Serial2.println();
+//         Serial2.print("Path = ");
+//         for (int i = 0; i < MAX_PATH_LENGTH; i++) Serial2.print(path_s[i]);
+//     }
+// }
+//
+//
+//
 
 
 /*===================================================================
                 Codigo de calibracion infrarrojo
 ====================================================================*/
 
-    // getIR(irval);
+    // getIR(dist);
     //
     // Serial2.print("FL = ");
     // Serial2.print(irval[0]);

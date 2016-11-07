@@ -52,6 +52,11 @@ float sensorError;
 #define sensor_error_trigger 5
 #define a_scale 30
 
+// Control variables (flags to shutdown parts of the controller)
+uint8_t use_Sensor = 0; // 1 = center on straight with IR SENSORS, 0 = doenst
+uint8_t use_Controller = 0; // 1 = Runs PD controller block, 0 = doenst
+
+
 
 /* =====================================================================================
                                 Functions
@@ -59,7 +64,7 @@ float sensorError;
 
 // Configures the global variables for data transportation.
 // and 1mS interrupt
-void startController(void){
+void beginController(void){
     // resetSpeedProfile();
     configureEncoderLib();
     controllerTimer.begin(temporalIntHandler, interruptTiming);
@@ -75,7 +80,8 @@ void temporalIntHandler(void){
     updateEncoderStatus();
     // updateCurrentSpeed();
     AngularSpeed = getAngularVelocity();
-    PD_controller();
+    getSensorEror();
+    if (use_Controller == 1) PD_controller();
 }
 
 
@@ -112,8 +118,10 @@ void getSensorEror(void)//the very basic case
 {
     getIRDistance(ir_sensor_distances);
 
-    if (abs(ir_sensor_distances[1] - ir_sensor_distances[2]) > sensor_error_trigger)    sensorError = ir_sensor_distances[1] - ir_sensor_distances[2];
+    if (abs(ir_sensor_distances[1] - ir_sensor_distances[2]) > sensor_error_trigger)    sensorError = ir_sensor_distances[2] - ir_sensor_distances[1];
     else  sensorError = 0;
+
+    if ((isWallRight() == 0) || (isWallLeft() == 0)) sensorError = 0;
 }
 
 
@@ -175,7 +183,7 @@ void PD_controller(void) // encoder PD controller
     //
 	sensorFeedback = sensorError*a_scale;//have sensor error properly scale to fit the system
 
-	rotationalFeedback = gyroFeedback + sensorFeedback;//encoderFeedbackW;
+	rotationalFeedback = gyroFeedback + sensorFeedback * (use_Sensor); //encoderFeedbackW;
 
 
 	posErrorX = setpointV - encoderFeedbackX;
@@ -275,6 +283,27 @@ void setTargetSpeedW(float tspw){
 
     targetSpeedW = tspw;
 }
+
+void startController(void){
+
+    use_Controller = 1;
+}
+
+void stopController(void){
+
+    use_Controller = 0;
+}
+
+void startIRcentering(void){
+
+    use_Sensor = 1;
+}
+
+void stopIRcentering(void){
+
+    use_Sensor = 0;
+}
+
 
 // // Acceleration profile variables
 // float getCurrentSpeedV(void){
