@@ -46,6 +46,12 @@ float currentSpeedW;
 #define AccelerationV 200       // mm/s^2
 #define AccelerationW 50        // degrees/s^2
 
+// IR sensor distances.
+float ir_sensor_distances[4];
+float sensorError;
+#define sensor_error_trigger 5
+#define a_scale 30
+
 
 /* =====================================================================================
                                 Functions
@@ -102,6 +108,16 @@ void updateCurrentSpeed(void)
 }
 
 
+void getSensorEror(void)//the very basic case
+{
+    getIRDistance(ir_sensor_distances);
+
+    if (abs(ir_sensor_distances[1] - ir_sensor_distances[2]) > sensor_error_trigger)    sensorError = ir_sensor_distances[1] - ir_sensor_distances[2];
+    else  sensorError = 0;
+}
+
+
+
 float needToDecelerate(float dist, float curSpd, float endSpd)//speed are in encoder counts/ms, dist is in encoder counts
 {
 	if (curSpd<0) curSpd = -curSpd;
@@ -145,6 +161,7 @@ void PD_controller(void) // encoder PD controller
 	float rotationalFeedback;
     float encoderFeedbackX;
     float encoderFeedbackW;
+    float sensorFeedback;
 
 
     /* simple PD loop to generate base speed for both motors */
@@ -156,9 +173,9 @@ void PD_controller(void) // encoder PD controller
     if (setpointW != 0) angleLeft -= gyroFeedback * (interruptTiming/1000) / 1000;  // (interruptTiming/1000) / 1000 this is deltaT in seconds
     else angleLeft = 0;
     //
-	// sensorFeedback = sensorError/a_scale;//have sensor error properly scale to fit the system
+	sensorFeedback = sensorError*a_scale;//have sensor error properly scale to fit the system
 
-	rotationalFeedback = gyroFeedback;//encoderFeedbackW;
+	rotationalFeedback = gyroFeedback + sensorFeedback;//encoderFeedbackW;
 
 
 	posErrorX = setpointV - encoderFeedbackX;

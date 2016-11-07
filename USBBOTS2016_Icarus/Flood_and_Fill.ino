@@ -49,17 +49,33 @@
 // maze storage
 #define NUMCELLS 256
 //We predifine the 10 by 10 labyrinth
-uint8_t  maze[NUMCELLS] = { 12, 8, 8, 8, 8, 8, 8, 8, 8, 9, 0, 0, 0, 0, 0, 0,             // NORTH -->
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                            6, 2, 2, 2, 2, 2, 2, 2, 2, 3, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+// uint8_t  maze[NUMCELLS] = { 14, 10, 10, 10, 9, 4, 8, 8, 8, 9, 0, 0, 0, 0, 0, 1,             // NORTH -->
+//                             12, 8, 8, 9, 5, 4, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 1, 6, 3, 4, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 0, 8, 8, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+//                             6, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 0, 0, 0, 0, 1,
+//                             8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0,
+//                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t  maze[NUMCELLS] = { 14, 8, 8, 8, 8, 8, 8, 8, 8, 9, 0, 0, 0, 0, 0, 1,             // NORTH -->
+                            12, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 1,
+                            6, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 0, 0, 0, 0, 1,
+                            8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -71,6 +87,7 @@ uint8_t  maps[NUMCELLS];
 // Path generator variable
 #define MAX_PATH_LENGTH 150
 char path[MAX_PATH_LENGTH];
+char current_orientation = 'S';   // 'N' = north, 'W' = west, 'E' = east, 'S' = south.
 
 
 
@@ -161,14 +178,14 @@ uint8_t floodMaze(uint8_t goal_x, uint8_t goal_y)
     return passes;
 }
 
-
+//
 void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
 
     // Current investigated cell, index of the char path .
     uint8_t current_cell, index = 0;
     // Variables to check where should I move.
     uint8_t go_north=0, go_east=0, go_west=0, go_south=0;
-    char orientation = 'S';    // 'N' = north, 'W' = west, 'E' = east, 'S' = south.
+    char orientation = current_orientation;    // 'N' = north, 'W' = west, 'E' = east, 'S' = south.
 
     // Start at the goal cell and work your way toward the zero square
     current_cell = start_x + 16*start_y;
@@ -197,21 +214,47 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
 
 
 
+        // // check North to see if you should move there
+        // if ((maps[current_cell + 1 ] == maps[current_cell] - 1))  go_north = 1;
+        //
+        // // check East to see if you should move there
+        // if ((maps[current_cell + 16 ] == maps[current_cell] - 1 ))  go_east = 1;
+        //
+        // // check West to see if you should move there, and check if you can actually access that part of the array.
+        // if (current_cell >= 16)
+        // if ((maps[current_cell - 16 ] == maps[current_cell] - 1 )) go_west = 1;
+        //
+        // // check South to see if you should move there, and check if you can actually access that part of the array.
+        // if (current_cell >= 0)
+        // if ((maps[current_cell - 1 ] == maps[current_cell] - 1 ))  go_south = 1;
+
         // check North to see if you should move there
-        if (maps[current_cell + 1 ] == maps[current_cell] - 1 )  go_north = 1;
+        if ((maps[current_cell + 1 ] == maps[current_cell] - 1)  &&  ((maze[current_cell] & NORTH) == 0))  go_north = 1;
 
         // check East to see if you should move there
-        if (maps[current_cell + 16 ] == maps[current_cell] - 1 )  go_east = 1;
+        if ((maps[current_cell + 16 ] == maps[current_cell] - 1 )  &&  ((maze[current_cell] & EAST) == 0))  go_east = 1;
 
         // check West to see if you should move there, and check if you can actually access that part of the array.
         if (current_cell >= 16)
-        if (maps[current_cell - 16 ] == maps[current_cell] - 1 )  go_west = 1;
+        if ((maps[current_cell - 16 ] == maps[current_cell] - 1 )  &&  ((maze[current_cell] & WEST) == 0)) go_west = 1;
 
         // check South to see if you should move there, and check if you can actually access that part of the array.
         if (current_cell >= 0)
-        if (maps[current_cell - 1 ] == maps[current_cell] - 1 )  go_south = 1;
+        if ((maps[current_cell - 1 ] == maps[current_cell] - 1 )  &&  ((maze[current_cell] & SOUTH) == 0))  go_south = 1;
 
+        // Security check for no path found.
+        if ((go_north + go_east + go_west + go_south) == 0) {
+            out_path[index++] = 'X';
+            return;
+        }
 
+        // Serial2.print(go_north);
+        // Serial2.print(go_east);
+        // Serial2.print(go_west);
+        // Serial2.println(go_south);
+        // Serial2.println(maze[current_cell]);
+        // Serial2.println(maze[current_cell] & SOUTH);
+        // delay(2);
 
         // Decide where to go based on orientation to avoid too many turns
         // If you are going North, prioritize north movement by checking it first.
@@ -230,6 +273,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'E';
                 out_path[index++] = 'R';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell += 16;
             }
@@ -238,6 +282,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'W';
                 out_path[index++] = 'L';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell -= 16;
             }
@@ -268,6 +313,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'S';
                 out_path[index++] = 'R';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell -= 1;
             }
@@ -276,6 +322,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'N';
                 out_path[index++] = 'L';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell += 1;
             }
@@ -306,6 +353,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'N';
                 out_path[index++] = 'R';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell += 1;
             }
@@ -314,6 +362,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'S';
                 out_path[index++] = 'L';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell -= 1;
             }
@@ -344,6 +393,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'W';
                 out_path[index++] = 'R';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell -= 16;
             }
@@ -352,6 +402,7 @@ void generatePath(uint8_t start_x, uint8_t start_y, char* out_path){
                 // Update orientation of the robot
                 orientation = 'E';
                 out_path[index++] = 'L';
+                out_path[index++] = 'F';
                 // move the robot to the corresponding cell
                 current_cell += 16;
             }
@@ -378,16 +429,247 @@ void floodAndFill(uint8_t start_x, uint8_t start_y, uint8_t goal_x, uint8_t goal
 
     int passes;
 
+    // Serial2.println("   BPt");
     // resets the path
     for (size_t i = 0; i < MAX_PATH_LENGTH; i++) {
         out_path[i] = 0;
     }
+    // Serial2.println("   APt");
 
+    // Serial2.println("   BfM");
     //Run the flooder
     passes = floodMaze(goal_x,goal_y);
+    // Serial2.println("   AfM");
+    // Serial2.println("   BgP");
     generatePath(start_x,start_y,out_path);
+    // Serial2.println("   AgP");
 
 }
+
+void updateMaze(uint8_t cell_x, uint8_t cell_y){
+
+    // Current investigated cell, index of the char path .
+    uint8_t current_cell, index = 0;
+    // Current investigated cell
+    current_cell = cell_x + 16*cell_y;
+
+
+    // If you are going East, change way you access the maze array
+    if (current_orientation == 'N'){
+
+        // FRONT SENSORS CHECK
+        if (isWallFront() == 2) {                   // Wall right in front
+            maze[current_cell]      |=  NORTH;      // put wall in the cell,
+            maze[current_cell + 1]  |=  SOUTH;      // put contrary will in the adjacent cell, this avoids one way walls
+        }
+        else if (isWallFront() == 1) {              // Wall one cell away
+            maze[current_cell + 1]  |=  NORTH;       // put wall in the cell,
+            maze[current_cell + 2]  |=  SOUTH;      // put contrary wall in the adjacent cell, this avoids one way walls
+        }
+        else{                                       // No walls detected
+            maze[current_cell]      &=  NOTNORTH;   // put wall in the cell,
+            maze[current_cell + 1]  &=  NOTSOUTH;   // put contrary will in the adjacent cell, this avoids one way walls
+            maze[current_cell + 1]  &=  NOTNORTH;   // put wall in the cell,
+            maze[current_cell + 2]  &=  NOTSOUTH;   // put contrary will in the adjacent cell, this avoids one way walls
+        }
+
+        // DIAGONAL RIGHT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallRight()) {                        // Wall to the right of the next cel
+            maze[current_cell + 1]      |=  EAST;   //
+            maze[current_cell + 1 + 16] |=  WEST;   // Wall to the right of the next cell
+        }
+        else {
+            maze[current_cell + 1]      &=  NOTEAST;   //
+            maze[current_cell + 1 + 16] &=  NOTWEST;   // Wall to the right of the next cell
+        }
+
+        // DIAGONAL LEFT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallLeft()) {                             // Wall to the Left of the next cell
+            maze[current_cell + 1]          |=  WEST;   //
+            // avoid negative overflow
+            if (current_cell > 16)
+                maze[current_cell + 1 - 16] |=  EAST;   // Wall to the right of the next cell
+        }
+        else {
+            maze[current_cell + 1]          &=  NOTWEST;   //
+            // avoid negative overflow
+            if (current_cell > 16)
+                maze[current_cell + 1 - 16] &=  NOTEAST;   // Wall to the right of the next cell
+        }
+    }
+
+
+    // If you are going East, change way you access the maze array
+    if (current_orientation == 'E'){
+
+        // FRONT SENSORS CHECK
+        if (isWallFront() == 2) {                   // Wall right in front
+            maze[current_cell]       |=  EAST;      // put wall in the cell,
+            maze[current_cell + 16]  |=  WEST;      // put contrary will in the adjacent cell, this avoids one way walls
+        }
+        else if (isWallFront() == 1) {              // Wall one cell away
+            maze[current_cell + 16]  |=  EAST;       // put wall in the cell,
+            maze[current_cell + 32]  |=  WEST;      // put contrary wall in the adjacent cell, this avoids one way walls
+        }
+        else{                                       // No walls detected
+            maze[current_cell]       &=  NOTEAST;   // put wall in the cell,
+            maze[current_cell + 16]  &=  NOTWEST;   // put contrary will in the adjacent cell, this avoids one way walls
+            maze[current_cell + 16]  &=  NOTEAST;   // put wall in the cell,
+            maze[current_cell + 32]  &=  NOTWEST;   // put contrary will in the adjacent cell, this avoids one way walls
+        }
+
+        // DIAGONAL RIGHT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallRight()) {                        // Wall to the right of the next cel
+            maze[current_cell + 16]     |=  SOUTH;   //
+            maze[current_cell + 16 - 1] |=  NORTH;   // Wall to the right of the next cell
+        }
+        else {
+            maze[current_cell + 16]     &=  NOTSOUTH; //
+            maze[current_cell + 16 - 1] &=  NOTNORTH; // Wall to the right of the next cell
+        }
+
+        // DIAGONAL LEFT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallLeft()) {                           // Wall to the Left of the next cell
+            maze[current_cell + 16]     |=  NORTH;    //
+            maze[current_cell + 16 + 1] |=  SOUTH;    // Wall to the right of the next cell
+        }
+        else {
+            maze[current_cell + 16]     &=  NOTNORTH;    //
+            maze[current_cell + 16 + 1] &=  NOTSOUTH;    // Wall to the right of the next cell
+
+        }
+    }
+
+    // If you are going Wast, prioritize north movement by checking it first.
+    if (current_orientation == 'W'){
+
+        // FRONT SENSORS CHECK
+        if (isWallFront() == 2) {                   // Wall right in front
+            maze[current_cell]          |=  WEST;      // put wall in the cell,
+            if (current_cell > 16)
+                maze[current_cell - 16] |=  EAST;
+            }
+
+        else if (isWallFront() == 1) {              // Wall one cell away
+            if (current_cell > 16)
+                maze[current_cell - 16]  |=  WEST;
+            if (current_cell > 32)
+                maze[current_cell - 32]  |=  EAST;       // put wall in the cell,
+        }
+        else{                                       // No walls detected
+            maze[current_cell]           &=  NOTWEST;   // put wall in the cell,
+            if (current_cell > 16)
+                maze[current_cell - 16]  &=  NOTEAST;   // put contrary will in the adjacent cell, this avoids one way walls
+            if (current_cell > 16)
+                maze[current_cell - 16]  &=  NOTWEST;   // put wall in the cell,
+            if (current_cell > 32)
+                maze[current_cell - 32]  &=  NOTEAST;   // put contrary will in the adjacent cell, this avoids one way walls
+        }
+
+        // DIAGONAL RIGHT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallRight()) {                        // Wall to the right of the next cel
+            if (current_cell > 16)
+                maze[current_cell - 16]     |=  NORTH;   //
+            if (current_cell > 16)
+                maze[current_cell + 1 - 16] |=  SOUTH;   // Wall to the right of the next cell
+        }
+        else {
+            if (current_cell > 16)
+                maze[current_cell - 16]     &=  NOTNORTH;   //
+            if (current_cell > 16)
+                maze[current_cell + 1 - 16] &=  NOTSOUTH;   // Wall to the right of the next cell
+        }
+
+        // DIAGONAL LEFT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallLeft()) {                             // Wall to the Left of the next cell
+            if (current_cell > 16)
+                maze[current_cell - 16]     |=  SOUTH;   //
+            if (current_cell > 17)
+                maze[current_cell - 16 - 1] |=  NORTH;   // Wall to the right of the next cell
+        }
+        else {
+            if (current_cell > 16)
+                maze[current_cell - 16]     &= NOTSOUTH;   //
+            if (current_cell > 16)
+                maze[current_cell + 1 - 16] &= NOTNORTH;   // Wall to the right of the next cell
+        }
+
+    }
+
+
+    // If you are going South, prioritize north movement by checking it first.
+    if (current_orientation == 'S'){
+
+        // FRONT SENSORS CHECK
+        if (isWallFront() == 2) {                   // Wall right in front
+            maze[current_cell]          |=  SOUTH;      // put wall in the cell,
+            if (current_cell > 1)
+                maze[current_cell - 1]  |=  NORTH;
+            }
+
+        else if (isWallFront() == 1) {              // Wall one cell away
+            if (current_cell > 1)
+                maze[current_cell - 1]  |=  SOUTH;
+            if (current_cell > 2)
+                maze[current_cell - 2]  |=  NORTH;  // put wall in the cell,
+        }
+        else{                                       // No walls detected
+            maze[current_cell]          &=  NOTSOUTH;   // put wall in the cell,
+            if (current_cell > 1)
+                maze[current_cell - 1]  &=  NOTNORTH;   // put contrary will in the adjacent cell, this avoids one way walls
+            if (current_cell > 1)
+                maze[current_cell - 1]  &=  NOTSOUTH;   // put wall in the cell,
+            if (current_cell >2)
+                maze[current_cell - 2]  &=  NOTNORTH;   // put contrary will in the adjacent cell, this avoids one way walls
+        }
+
+        // DIAGONAL RIGHT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallRight()) {                        // Wall to the right of the next cel
+            if (current_cell > 1)
+                maze[current_cell - 1]      |=  WEST;   //
+            if (current_cell > 17)
+                maze[current_cell - 1 - 16] |=  EAST;   // Wall to the right of the next cell
+        }
+        else {
+            if (current_cell > 1)
+                maze[current_cell - 1]      &=  NOTWEST;   //
+            if (current_cell > 17)
+                maze[current_cell - 1 - 16] &=  NOTEAST;   // Wall to the right of the next cell
+        }
+
+        // DIAGONAL LEFT SENSOR CHECK
+        if (isWallFront() != 2)
+        if (isWallLeft()) {
+            if (current_cell > 1)                           // Wall to the Left of the next cell
+                maze[current_cell - 1]     |=  EAST;   //
+            maze[current_cell - 1 + 16]    |=  WEST;   // Wall to the right of the next cell
+        }
+        else {
+            if (current_cell > 1)
+                maze[current_cell - 1]     &= NOTEAST;   //
+            maze[current_cell - 1 + 16]    &= NOTWEST;   // Wall to the right of the next cell
+        }
+
+    }
+
+
+
+}
+
+
+
+
+
+/* =====================================================================================
+                                EEPROM MEMORY
+====================================================================================== */
 
 // This function saves the current maze to the EEPROM, to the first 256 address
 void saveMaze(void){
@@ -403,4 +685,20 @@ void restoreMaze(void){
     for (size_t i = 0; i < NUMCELLS; i++) {
         maze[i] = EEPROM.read(i);
     }
+}
+
+
+
+/* =====================================================================================
+                                GETS & SETS
+====================================================================================== */
+
+char getMouseOrientation(void){
+
+    return current_orientation;
+}
+
+void setMouseOrientation(char cmo){
+
+    current_orientation = cmo;
 }
