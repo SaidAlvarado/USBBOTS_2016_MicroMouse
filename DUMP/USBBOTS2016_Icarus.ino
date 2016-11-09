@@ -12,11 +12,9 @@ extern float posPwmX, posPwmW;
 extern int32_t leftBaseSpeed;
 extern int32_t rightBaseSpeed;
 extern float AngularSpeed;
-extern float currentSpeedV;
-
 #define calibrator 1 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
 // #define calibrator 0.6 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
-#define calibratorA 1 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
+#define calibratorA 0.6 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
 
 // Variables para chequear el flood and fill
 #define NUMCELLS 256
@@ -46,6 +44,9 @@ uint8_t mapeo, corrida;
 // External access for distance
 extern float ir_sensor_distances[4];
 extern float sensorError;
+
+// Rate de desacelracion
+float decX = 600;
 
 // Sequencer variables
 uint8_t done = 0;
@@ -77,51 +78,41 @@ void setup() {
   cell_y = 0;
 
 
- // Serial2.println("Esperando...");
- //  // Si se presiona el boton empieza el mapeo.
- //  while(digitalRead(BTN_SPEED));
- //
- //  // mapeo = 1;
- //  corrida = 1;
- //
- //  Serial2.println("Empezo el recorrido");
- //  delay(3000);
+ Serial2.println("Esperando...");
+  // Si se presiona el boton empieza el mapeo.
+  while(digitalRead(BTN_SPEED));
+
+  // mapeo = 1;
+  corrida = 1;
+
+  //speed profile
+  #define maxSpeed 2000 // mm/s
+
+  Serial2.println("Empezo el recorrido");
+  delay(3000);
 
 }  // put your setup code here, to run once:
 
 
 uint8_t data;
 uint8_t index_s;
-float acc;
 
 void loop() {
 
 
-
-    Serial2.print("dLeft = ");
-    Serial2.print(getDistanceLeft());
-    Serial2.print("   ");
     //
-    // Serial2.print("tSpeed = ");
-    // Serial2.print(getTargetSpeedV());
+    // Serial2.print("distanceLeft = ");
+    // Serial2.print(getDistanceLeft());
     // Serial2.print("   ");
     //
-    // Serial2.print("currSpd = ");
-    // Serial2.print(currentSpeedV);
-    // Serial2.print("   ");
-    //
-    // Serial2.print("Acc = ");
-    // Serial2.print(acc);
-    // Serial2.print("   ");
-
-    // Serial2.print("aLeft = ");
+    // Serial2.print("angleLeft = ");
     // Serial2.print(getAngleLeft());
     // Serial2.print("   ");
-
+    //
     // Serial2.print("posErrorW = ");
     // Serial2.print(posErrorW);
     // Serial2.print("   ");
-
+    //
     // Serial2.print("posPwmX = ");
     // Serial2.print(posPwmX);
     // Serial2.print("   ");
@@ -138,94 +129,52 @@ void loop() {
     // Serial2.print(rightBaseSpeed);
     // Serial2.print("   ");
     //
-    // Serial2.print("VL = ");
-    // Serial2.print(getVL());
-    // Serial2.print("   ");
-    //
-    // Serial2.print("VR = ");
-    // Serial2.print(getVR());
-    // Serial2.print("   ");
-    //
     // Serial2.print("Vmean = ");
     // Serial2.print(getVmean());
     // Serial2.println("mm/s    ");
     //
-
-
-    // Serial2.print(getTargetSpeedV());
-    // Serial2.print(",");
-    // Serial2.print(currentSpeedV);
-    // Serial2.print(",");
-    // Serial2.print(getVmean());
-    // Serial2.print(",");
-    // Serial2.println(leftBaseSpeed);
-
-
-
-
-
-
-    acc = needToDecelerate(getDistanceLeft(),getVmean(),0);
-    // acc = needToDecelerate(getDistanceLeft(),getCurrentSpeedV(),0);
-
-    if(acc > AccelerationV) setTargetSpeedV(0);
-    if ((ir_sensor_distances[0] >= 36) || (ir_sensor_distances[1] >= 30) || (ir_sensor_distances[2] >= 30) || (ir_sensor_distances[3] >= 36));
-    else{
-        if (isWallLeft() == 0 &&  old_wall_left == 1) {
-            if( getDistanceLeft() > 100) setDistanceLeft(180);
-            if( getDistanceLeft() < 30) setDistanceLeft(0);
-        }
-        if (isWallRight() == 0 &&  old_wall_right == 1) {
-            if( getDistanceLeft() > 100) setDistanceLeft(180);
-            if( getDistanceLeft() < 30) setDistanceLeft(0);
-        }
-    }
-
-    if (abs(getAngleLeft()) < 10.0 ) {
-        setSetPointW(0);
-        // stopController();
-        // stopIRcentering();
-        done = 0;
-    }
-
-
-    if (Serial2.available()) {
-
-        data = Serial2.read();
-
-        if (data == '0') {
-            setTargetSpeedV(0);
-            setDistanceLeft(0);
-        }
-
-        if (data == '1') {
-            startController();
-            setDistanceLeft(180);
-            setTargetSpeedV(moveSpeed);
-            setSetPointW(0);
-        }
-
-        if (data == '2') {
-            startController();
-            setSetPointW(-500);
-            setAngleLeft(-90*calibratorA);
-            setTargetSpeedV(0);
-        }
-
-        if (data == '3') {
-            startController();
-            setDistanceLeft(180*5);
-            setTargetSpeedV(moveSpeed);
-            setSetPointW(0);
-        }
-
-        if (data == 'g') {
-            gyroCalibration();
-        }
-
-    }
-        delay(1);
-
+    //
+    // if (getDistanceLeft() == 0) setTargetSpeedV(0);
+    //
+    //
+    // if (abs(getAngleLeft()) < 10.0 ) {
+    //     setSetPointW(0);
+    //     // stopController();
+    //     // stopIRcentering();
+    //     done = 0;
+    // }
+    //
+    //
+    // if (Serial2.available()) {
+    //
+    //     data = Serial2.read();
+    //
+    //     if (data == '0') {
+    //         setTargetSpeedV(0);
+    //         setDistanceLeft(0);
+    //     }
+    //
+    //     if (data == '1') {
+    //         setTargetSpeedV(3000);
+    //         setSetPointW(0);
+    //         setDistanceLeft(1500);
+    //     }
+    //
+    //     if (data == '2') {
+    //         startController();
+    //         stopIRcentering();
+    //         setSetPointW(-500);
+    //         setAngleLeft(-90*calibratorA);
+    //         setTargetSpeedV(0);
+    //     }
+    //
+    //     if (data == 'g') {
+    //         gyroCalibration();
+    //     }
+    //
+    // }
+    //
+    // delay(20);
 
 
 
@@ -236,39 +185,39 @@ void loop() {
 
 
         // getIRDistance(dist);
-
-        Serial2.print("FL = ");
-        Serial2.print(ir_sensor_distances[0]);
-        Serial2.print("   ");
-
-        Serial2.print("DL = ");
-        Serial2.print(ir_sensor_distances[1]);
-        Serial2.print("   ");
-
-        Serial2.print("DR = ");
-        Serial2.print(ir_sensor_distances[2]);
-        Serial2.print("   ");
-
-        Serial2.print("FR = ");
-        Serial2.print(ir_sensor_distances[3]);
-        Serial2.print("   ");
-
-        Serial2.print("Wall_left = ");
-        Serial2.print(isWallLeft());
-        Serial2.print("   ");
-
-        Serial2.print("Wall_left = ");
-        Serial2.print(isWallRight());
-        Serial2.print("   ");
-
-        Serial2.print("Front Wall = ");
-        Serial2.print(isWallFront());
-        Serial2.println("   ");
-
-
+        //
+        // Serial2.print("FL = ");
+        // Serial2.print(dist[0]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("DL = ");
+        // Serial2.print(dist[1]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("DR = ");
+        // Serial2.print(dist[2]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("FR = ");
+        // Serial2.print(dist[3]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Wall_left = ");
+        // Serial2.print(isWallLeft());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Wall_left = ");
+        // Serial2.print(isWallRight());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Front Wall = ");
+        // Serial2.print(isWallFront());
+        // Serial2.println("   ");
 
 
-/*
+
+
+
     if(mapeo == 1){
         if (done == 0){
             updateMaze(cell_x, cell_y);
@@ -378,7 +327,6 @@ void loop() {
 
         if (done == 1){ executeStep(path_s[index_s]); if (done == 0)  index_s++;}
     }
-    */
 }
 
 // Executes one or more steps of the planned path, returns the index of the array where it ends
@@ -463,6 +411,8 @@ uint8_t executeStep(char run_path){
                 setSetPointW(600);
                 setAngleLeft(90*calibratorA);
                 setTargetSpeedV(0);
+
+
                 done = 1;   //set the flag that a new command started
             }
             else {
@@ -484,27 +434,40 @@ uint8_t executeStep(char run_path){
             // Turn 90 degree over your own axis.
             startController();
             startIRcentering();
-            setTargetSpeedV(moveSpeed);
+            setTargetSpeedV(2000);
             setSetPointW(0);
             setDistanceLeft(180*calibrator);
+
             done = 1;   //set the flag that a new command started
         }
         else {
             if (isWallFront() == 1 && (getDistanceLeft() > 90) ) setDistanceLeft(90);
             if (isWallFront() == 2 && (getDistanceLeft() > 60) ) {setDistanceLeft(60);}
-            if (isWallLeft() == 0 &&  old_wall_left == 1) setDistanceLeft(60);
-            if (isWallRight() == 0 &&  old_wall_right == 1) setDistanceLeft(60);
+            // if (isWallLeft() == 0 &&  old_wall_left == 1) setDistanceLeft(60);
+            // if (isWallRight() == 0 &&  old_wall_right == 1) setDistanceLeft(60);
 
             if(needToDecelerate(getDistanceLeft(),getVmean(),0)< AccelerationV)
 
-                setTargetSpeedV(moveSpeed);
+                setTargetSpeedV(maxSpeed)
                 //targetSpeedV = 2000;
 
             else
 
+            	setTargetSpeedV(0);
+
+
+            if (getDistanceLeft() == 0) {
                 setTargetSpeedV(0);
-
-
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                delay(10);
                 done = 0;
                 // stopController();
                 // stopIRcentering();
@@ -514,7 +477,7 @@ uint8_t executeStep(char run_path){
         }
     }
 
-
+}
 
 /*===================================================================
                 Ruta Predeterminada

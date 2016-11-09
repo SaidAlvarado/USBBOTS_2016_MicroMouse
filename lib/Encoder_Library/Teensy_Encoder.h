@@ -79,3 +79,9 @@ void ISRrotB2Change(void);
 // Calculates both speeds from the encoders
 void calculateSpeed(void);
 //------------------Internal functions------------------------------------
+
+// Return the time between pulses for the left wheel
+int32_t getTimeLeftWheel(void);
+
+// Return the time between pulses for the right wheel
+int32_t getTimeRightWheel(void);

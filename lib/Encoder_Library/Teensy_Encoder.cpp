@@ -5,6 +5,10 @@
 #include "Arduino.h"
 #include "Teensy_Encoder.h"
 
+
+#define ENC1_B          8
+#define ENC2_B          12
+
 // Rotary encoder variables, used by interrupt routines
  volatile int8_t old_enc1 = 0, old_enc2 = 0;
  volatile int8_t new_enc1 = 0, new_enc2 = 0;
@@ -16,6 +20,14 @@
 volatile float speed1 = 0.0;
 volatile float speed2 = 0.0;
 volatile int32_t old_rot1Steps = 0, old_rot2Steps = 0;
+
+//Used to count how much time passes between pulses
+elapsedMicros pulse_timer_left = 0;
+elapsedMicros pulse_timer_right = 0;
+int32_t time_left_encoder = 9999999;
+int32_t time_right_encoder = 9999999;
+
+
 
 // Create an IntervalTimer object
 IntervalTimer rotationTimer;
@@ -148,12 +160,20 @@ void ISRrotA1Change(){
     new_enc1 = (digitalReadFast(rotB1Pin)<<1) | digitalReadFast(rotA1Pin);
     rot1Steps+= QEM[(old_enc1<<2) + new_enc1];
     old_enc1 = new_enc1;
+
+    //Speed calculation for left wheel
 }
 
 void ISRrotB1Change() {
     new_enc1 = (digitalReadFast(rotB1Pin)<<1) | digitalReadFast(rotA1Pin);
     rot1Steps+= QEM[(old_enc1<<2) + new_enc1];
     old_enc1 = new_enc1;
+
+    // //Speed calculation for left wheel
+    // if (digitalReadFast(ENC1_B) == 0){
+    //     time_left_encoder = pulse_timer_left;
+    //     pulse_timer_left = 0;
+    // }
 }
 
 // Interrupt routines
@@ -161,6 +181,8 @@ void ISRrotA2Change(void) {
     new_enc2 = (digitalReadFast(rotA2Pin)<<1) | digitalReadFast(rotB2Pin);
     rot2Steps+= QEM[(old_enc2<<2) + new_enc2];
     old_enc2 = new_enc2;
+
+    //Speed calculation for right wheel
 }
 
 void ISRrotB2Change()
@@ -168,7 +190,30 @@ void ISRrotB2Change()
     new_enc2 = (digitalReadFast(rotA2Pin)<<1) | digitalReadFast(rotB2Pin);
     rot2Steps+= QEM[(old_enc2<<2) + new_enc2];
     old_enc2 = new_enc2;
+
+    // //Speed calculation for right wheel
+    // if (digitalReadFast(ENC2_B) == 0){
+    //     time_right_encoder = pulse_timer_right;
+    //     pulse_timer_right = 0;
+    // }
 }
 
 
 // Reference for the step calculations: http://www.robotpark.com/DT/PRO/91112-tutorial-how-to-use-a-quadrature-encoder-rs011a.pdf
+
+
+/* =====================================================================================
+                                GETS & SETS
+====================================================================================== */
+
+// Return the time between pulses for the left wheel
+int32_t getTimeLeftWheel(void) {
+
+    return time_left_encoder;
+}
+
+// Return the time between pulses for the right wheel
+int32_t getTimeRightWheel(void) {
+
+    return time_right_encoder;
+}

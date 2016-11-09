@@ -26,12 +26,6 @@
 #define IR_DIAG_RIGHT   21
 #define IR_FRONT_RIGHT  22
 #define IR_FRONT_LEFT   23
-
-// Pinout para el perfilador
-#define AccelerationV 10000
-#define moveSpeed 1000
-#define inplace_turn_speed 500
-#define AccelerationW 50        // degrees/s^2
-
-
+// Pinout para el perfilador 
+#define AccelerationV 200
 #endif

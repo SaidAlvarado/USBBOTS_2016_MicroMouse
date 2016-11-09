@@ -11,10 +11,10 @@
 
 // Temporal interrupts
 IntervalTimer controllerTimer;
-#define interruptTiming 10000 //1000 -> 1ms
+#define interruptTiming 1000 //1000 -> 1ms
 
 // Encoder variables.
-#define counts_to_mm 1.9   //1.35  2.1  pulsos por  milimetros.
+#define counts_to_mm 1.9   //1.35  2.1
 int32_t  enc_count_left, enc_count_right;
 int32_t  enc_count_left_old, enc_count_right_old;
 float VL, VR, Vmean, Wenc; // mm/s
@@ -26,7 +26,7 @@ float angleLeft;
 
 // Controller variables
 float setpointV, setpointW;
-float kpX = 125, kdX = 30; //9,9
+float kpX = 20, kdX = 8; //9,9
 float kpW = 80, kdW = 70;
 float posErrorX, posErrorW;
 float oldPosErrorX, oldPosErrorW;
@@ -39,6 +39,12 @@ float targetSpeedV;
 float targetSpeedW;
 float currentSpeedV;
 float currentSpeedW;
+
+//Speed variables
+#define moveSpeed 3000
+#define inplace_turn_speed 500
+#define AccelerationV 200       // mm/s^2
+#define AccelerationW 50        // degrees/s^2
 
 // IR sensor distances.
 float ir_sensor_distances[4];
@@ -93,8 +99,6 @@ void updateCurrentSpeed(void)
 		if(currentSpeedV < targetSpeedV)
 			currentSpeedV = targetSpeedV;
 	}
-
-
 	if(currentSpeedW < targetSpeedW)
 	{
 		currentSpeedW += AccelerationW * (interruptTiming/1000) / 1000;
@@ -119,7 +123,7 @@ void getSensorEror(void)//the very basic case
 
     if ((isWallRight() == 0) || (isWallLeft() == 0)) sensorError = 0;
 }
-
+``
 
 
 float needToDecelerate(float dist, float curSpd, float endSpd)//speed are in encoder counts/ms, dist is in encoder counts
@@ -129,7 +133,8 @@ float needToDecelerate(float dist, float curSpd, float endSpd)//speed are in enc
 	if (dist<0) dist = 1;//-dist;
 	if (dist == 0) dist = 1;  //prevent divide by 0
 
-    return abs((curSpd*curSpd - endSpd*endSpd)/(2*dist)); //dist_counts_to_mm(dist)/2);
+	return (abs((curSpd*curSpd - endSpd*endSpd)/2*dist)); //dist_counts_to_mm(dist)/2);
+
 	//calculate deceleration rate needed with input distance, input current speed and input targetspeed to determind if the deceleration is needed
 	//use equation 2*a*S = Vt^2 - V0^2  ==>  a = (Vt^2-V0^2)/2/S
 	//because the speed is the sum of left and right wheels(which means it's doubled), that's why there is a "/4" in equation since the square of 2 is 4
@@ -155,8 +160,6 @@ void updateEncoderStatus(void){
 
     if (distanceLeft > 0) distanceLeft -= Vmean * (interruptTiming/1000) / 1000;  // (interruptTiming/1000) / 1000 this is deltaT in seconds
     else distanceLeft = 0;
-
-
 }
 
 //  4362.5  1976
@@ -180,17 +183,16 @@ void PD_controller(void) // encoder PD controller
     else angleLeft = 0;
     //
 	sensorFeedback = sensorError*a_scale;//have sensor error properly scale to fit the system
-    // sensorFeedback = 0;//have sensor error properly scale to fit the system
-
 
 	rotationalFeedback = gyroFeedback + sensorFeedback;// * (use_Sensor); //encoderFeedbackW;
 
 
 	// posErrorX = setpointV - encoderFeedbackX;
-    posErrorX = currentSpeedV - encoderFeedbackX;
+    // Cambie estas porque no realizo el set point
+	// posErrorX = setpointV - encoderFeedbackX;
+	// posErrorW = setpointW - rotationalFeedback;
+	posErrorX = currentSpeedV - encoderFeedbackX;
 	posErrorW = currentSpeedW - rotationalFeedback;
-	// posErrorX = currentSpeedV - encoderFeedbackX;
-	// posErrorW = currentSpeedW - rotationalFeedback;
 
 	posPwmX = kpX * posErrorX + kdX * (posErrorX - oldPosErrorX);// * (interruptTiming/1000) / 1000;
 	posPwmW = kpW * posErrorW + kdW * (posErrorW - oldPosErrorW);// * (interruptTiming/1000) / 1000;
@@ -280,21 +282,6 @@ void setTargetSpeedV(float tspv){
     targetSpeedV = tspv;
 }
 
-float getTargetSpeedV(void){
-
-    return targetSpeedV;
-}
-
-void setCurrentSpeedV(float cspv){
-
-    currentSpeedV = cspv;
-}
-
-float getCurrentSpeedV(void){
-
-    return currentSpeedV;
-}
-
 void setTargetSpeedW(float tspw){
 
     targetSpeedW = tspw;
@@ -318,4 +305,16 @@ void startIRcentering(void){
 void stopIRcentering(void){
 
     use_Sensor = 0;
+}
+
+
+// // Acceleration profile variables
+float getCurrentSpeedV(void){
+
+    targetSpeedV;
+}
+
+float getCurrentSpeedW(void){
+
+    targetSpeedW = tspw;
 }

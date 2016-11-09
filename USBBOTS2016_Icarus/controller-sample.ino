@@ -273,32 +273,32 @@
 // /*
 // sample code for straight movement
 // */
-// // void moveOneCell(void)
-// // {
-// // 	// enable_sensor(),
-// // 	// enable_gyro();
-// // 	// enable_PID();
-// //
-// // 	targetSpeedW = 0;
-// // 	targetSpeedX = moveSpeed;
-// //
-// // 	do
-// // 	{
-// // 		/*you can call int needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd)
-// // 		here with current speed and distanceLeft to decide if you should start to decelerate or not.*/
-// // 		/*sample*/
-// // 		if(needToDecelerate(distanceLeft, curSpeedX, moveSpeed) < decX)
-// // 			targetSpeedX = maxSpeed;
-// // 		else
-// // 			targetSpeedX = moveSpeed;
-// //
-// // 		//there is something else you can add here. Such as detecting falling edge of post to correct longitudinal position of mouse when running in a straight path
-// // 	}
-// // 	while(  (encoderCount-oldEncoderCount) < oneCellDistance );
-// // 	//LFvalues1 and RFvalues1 are the front wall sensor threshold when the center of mouse between the boundary of the cells.
-// // 	//LFvalues2 and RFvalues2 are the front wall sensor threshold when the center of the mouse staying half cell farther than LFvalues1 and 2
-// // 	//and LF/RFvalues2 are usually the threshold to determine if there is a front wall or not. You should probably move this 10mm closer to front wall when collecting
-// // 	//these thresholds just in case the readings are too weak.
-// //
-// // 	oldEncoderCount = encoderCount;	//update here for next movement to minimized the counts loss between cells.
-// // }
+// void moveOneCell(void)
+// {
+// 	// enable_sensor(),
+// 	// enable_gyro();
+// 	// enable_PID();
+//
+// 	targetSpeedW = 0;
+// 	targetSpeedX = moveSpeed;
+//
+// 	do
+// 	{
+// 		/*you can call int needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd)
+// 		here with current speed and distanceLeft to decide if you should start to decelerate or not.*/
+// 		/*sample*/
+// 		if(needToDecelerate(distanceLeft, curSpeedX, moveSpeed) < decX)
+// 			targetSpeedX = maxSpeed;
+// 		else
+// 			targetSpeedX = moveSpeed;
+//
+// 		//there is something else you can add here. Such as detecting falling edge of post to correct longitudinal position of mouse when running in a straight path
+// 	}
+// 	while(  (encoderCount-oldEncoderCount) < oneCellDistance );
+// 	//LFvalues1 and RFvalues1 are the front wall sensor threshold when the center of mouse between the boundary of the cells.
+// 	//LFvalues2 and RFvalues2 are the front wall sensor threshold when the center of the mouse staying half cell farther than LFvalues1 and 2
+// 	//and LF/RFvalues2 are usually the threshold to determine if there is a front wall or not. You should probably move this 10mm closer to front wall when collecting
+// 	//these thresholds just in case the readings are too weak.
+//
+// 	oldEncoderCount = encoderCount;	//update here for next movement to minimized the counts loss between cells.
+// }
