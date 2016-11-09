@@ -29,8 +29,8 @@ float DR[] =         {61800, 61700, 61300, 61200, 60100, 58200, 55600, 53300, 43
 float distancias[4];
 
 //Wall Threshold
-#define right_wall_th 17
-#define left_wall_th  17
+#define right_wall_th 20
+#define left_wall_th  20
 #define front_wall_lf_th 27
 #define front_wall_lf_close_th 8
 #define front_wall_rg_th 27

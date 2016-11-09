@@ -14,7 +14,7 @@ IntervalTimer controllerTimer;
 #define interruptTiming 1000 //1000 -> 1ms
 
 // Encoder variables.
-#define counts_to_mm 2.10    //1.35
+#define counts_to_mm 1.9   //1.35  2.1
 int32_t  enc_count_left, enc_count_right;
 int32_t  enc_count_left_old, enc_count_right_old;
 float VL, VR, Vmean, Wenc; // mm/s
@@ -183,9 +183,10 @@ void PD_controller(void) // encoder PD controller
     //
 	sensorFeedback = sensorError*a_scale;//have sensor error properly scale to fit the system
 
-	rotationalFeedback = gyroFeedback + sensorFeedback * (use_Sensor); //encoderFeedbackW;
+	rotationalFeedback = gyroFeedback + sensorFeedback;// * (use_Sensor); //encoderFeedbackW;
 
 
+	// posErrorX = setpointV - encoderFeedbackX;
 	posErrorX = setpointV - encoderFeedbackX;
 	posErrorW = setpointW - rotationalFeedback;
 	// posErrorX = currentSpeedV - encoderFeedbackX;

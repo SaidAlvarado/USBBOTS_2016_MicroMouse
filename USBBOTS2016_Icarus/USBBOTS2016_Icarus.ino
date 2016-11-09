@@ -12,8 +12,9 @@ extern float posPwmX, posPwmW;
 extern int32_t leftBaseSpeed;
 extern int32_t rightBaseSpeed;
 extern float AngularSpeed;
-#define calibrator 0.6 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
-#define calibratorA 0.9 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
+#define calibrator 1 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
+// #define calibrator 0.6 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
+#define calibratorA 0.6 // multiplica los 180mm de una celda para que en la realidad recorra el valor correcto.
 
 // Variables para chequear el flood and fill
 #define NUMCELLS 256
@@ -22,13 +23,18 @@ extern uint8_t  maps[NUMCELLS];
 
 // Path generator variable
 #define MAX_PATH_LENGTH 150
-char path_s[MAX_PATH_LENGTH];
-// char path_s[MAX_PATH_LENGTH] = "FRFFS";
+// char path_s[MAX_PATH_LENGTH];
+char path_s[] = "FS";
 
 uint8_t cell_x, cell_y;
 uint8_t goal_x, goal_y;
 char next_step;
 uint8_t start = 0;
+
+
+// Check old walls
+uint8_t old_wall_left = 1;
+uint8_t old_wall_right = 1;
 
 
 // Variables finales de estado del robot
@@ -62,8 +68,8 @@ void setup() {
   // setSetPointV(3000);
   // setSetPointW(0);
   setMouseOrientation('N');
-  goal_x = 0;
-  goal_y = 2;
+  goal_x = 4;
+  goal_y = 4;
 
   cell_x = 0;
   cell_y = 0;
@@ -73,17 +79,137 @@ void setup() {
   // Si se presiona el boton empieza el mapeo.
   while(digitalRead(BTN_SPEED));
 
-  mapeo = 1;
+  // mapeo = 1;
+  corrida = 1;
 
   Serial2.println("Empezo el recorrido");
-  delay(5000);
+  delay(3000);
 
 }  // put your setup code here, to run once:
 
 
 uint8_t data;
+uint8_t index_s;
 
 void loop() {
+
+
+    //
+    // Serial2.print("distanceLeft = ");
+    // Serial2.print(getDistanceLeft());
+    // Serial2.print("   ");
+    //
+    // Serial2.print("angleLeft = ");
+    // Serial2.print(getAngleLeft());
+    // Serial2.print("   ");
+    //
+    // Serial2.print("posErrorW = ");
+    // Serial2.print(posErrorW);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("posPwmX = ");
+    // Serial2.print(posPwmX);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("posPwmW = ");
+    // Serial2.print(posPwmW);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("PWM_L = ");
+    // Serial2.print(leftBaseSpeed);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("PWM_R = ");
+    // Serial2.print(rightBaseSpeed);
+    // Serial2.print("   ");
+    //
+    // Serial2.print("Vmean = ");
+    // Serial2.print(getVmean());
+    // Serial2.println("mm/s    ");
+    //
+    //
+    // if (getDistanceLeft() == 0) setSetPointV(0);
+    //
+    //
+    // if (abs(getAngleLeft()) < 10.0 ) {
+    //     setSetPointW(0);
+    //     // stopController();
+    //     // stopIRcentering();
+    //     done = 0;
+    // }
+    //
+    //
+    // if (Serial2.available()) {
+    //
+    //     data = Serial2.read();
+    //
+    //     if (data == '0') {
+    //         setSetPointV(0);
+    //         setDistanceLeft(0);
+    //     }
+    //
+    //     if (data == '1') {
+    //         setSetPointV(3000);
+    //         setSetPointW(0);
+    //         setDistanceLeft(1500);
+    //     }
+    //
+    //     if (data == '2') {
+    //         startController();
+    //         stopIRcentering();
+    //         setSetPointW(-500);
+    //         setAngleLeft(-90*calibratorA);
+    //         setSetPointV(0);
+    //     }
+    //
+    //     if (data == 'g') {
+    //         gyroCalibration();
+    //     }
+    //
+    // }
+    //
+    // delay(20);
+
+
+
+
+
+
+
+
+
+        // getIRDistance(dist);
+        //
+        // Serial2.print("FL = ");
+        // Serial2.print(dist[0]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("DL = ");
+        // Serial2.print(dist[1]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("DR = ");
+        // Serial2.print(dist[2]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("FR = ");
+        // Serial2.print(dist[3]);
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Wall_left = ");
+        // Serial2.print(isWallLeft());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Wall_left = ");
+        // Serial2.print(isWallRight());
+        // Serial2.print("   ");
+        //
+        // Serial2.print("Front Wall = ");
+        // Serial2.print(isWallFront());
+        // Serial2.println("   ");
+
+
+
 
 
     if(mapeo == 1){
@@ -111,19 +237,19 @@ void loop() {
             Serial2.print(isWallFront());
             Serial2.println("   ");
 
-            // Imprimimos la informacion
-
-            Serial2.println("");
-            Serial2.println("Laberinto =");
-            for (int i = 0; i < 256; i++) {
-
-                if (i%16 == 0) Serial2.println();
-
-                Serial2.print(maze[i]);
-                Serial2.print("\t");
-                delay(3);
-    
-            }
+            // // Imprimimos la informacion
+            //
+            // Serial2.println("");
+            // Serial2.println("Laberinto =");
+            // for (int i = 0; i < 256; i++) {
+            //
+            //     if (i%16 == 0) Serial2.println();
+            //
+            //     Serial2.print(maze[i]);
+            //     Serial2.print("\t");
+            //     delay(3);
+            //
+            // }
 
 
             Serial2.print("Path = ");
@@ -161,6 +287,10 @@ void loop() {
 
             if (next_step == 'X'){
                 Serial2.println("[-] Error, Path not found");
+                if (getMouseOrientation() == 'N') { setMouseOrientation('E');}
+                else if (getMouseOrientation() == 'E') { setMouseOrientation('S');}
+                else if (getMouseOrientation() == 'W') { setMouseOrientation('N');}
+                else if (getMouseOrientation() == 'S') { setMouseOrientation('W');}
             }
 
             if (next_step == 'S'){
@@ -172,7 +302,7 @@ void loop() {
 
 
 
-            delay(3000);
+            delay(300);
 
             executeStep(next_step);
         }
@@ -183,7 +313,14 @@ void loop() {
     }
 
 
-    if(corrida == 1){;}
+    if(corrida == 1){
+
+
+
+        if (done == 0 ) executeStep(path_s[index_s]);
+
+        if (done == 1){ executeStep(path_s[index_s]); if (done == 0)  index_s++;}
+    }
 }
 
 // Executes one or more steps of the planned path, returns the index of the array where it ends
@@ -197,7 +334,7 @@ uint8_t executeStep(char run_path){
             // Turn 90 degree over your own axis.
             startController();
             stopIRcentering();
-            setSetPointW(-500);
+            setSetPointW(-600);
             setAngleLeft(-90*calibratorA);
             setSetPointV(0);
             done = 1;   //set the flag that a new command started
@@ -205,8 +342,30 @@ uint8_t executeStep(char run_path){
         else {
             if (abs(getAngleLeft()) < 10.0 ) {
                 setSetPointW(0);
-                stopController();
+                // stopController();
                 stopIRcentering();
+                done = 0;
+            }
+        }
+    }
+
+    if (run_path == 'X'){
+
+        // If not currently running, start a new command
+        if (done == 0) {
+            // Turn 90 degree over your own axis.
+            startController();
+            stopIRcentering();
+            setSetPointW(-600);
+            setAngleLeft(-90*calibratorA);
+            setSetPointV(0);
+            done = 1;   //set the flag that a new command started
+        }
+        else {
+            if (abs(getAngleLeft()) < 10.0 ) {
+                setSetPointW(0);
+                // stopController();
+                // stopIRcentering();
                 done = 0;
             }
         }
@@ -220,7 +379,7 @@ uint8_t executeStep(char run_path){
             // Turn 90 degree over your own axis.
             startController();
             stopIRcentering();
-            setSetPointW(500);
+            setSetPointW(600);
             setAngleLeft(180*calibratorA);
             setSetPointV(0);
             done = 1;   //set the flag that a new command started
@@ -228,8 +387,8 @@ uint8_t executeStep(char run_path){
         else {
             if (abs(getAngleLeft()) < 10.0 ) {
                 setSetPointW(0);
-                stopController();
-                stopIRcentering();
+                // stopController();
+                // stopIRcentering();
                 done = 0;
 
             }
@@ -243,7 +402,7 @@ uint8_t executeStep(char run_path){
                 // Turn 90 degree over your own axis.
                 startController();
                 stopIRcentering();
-                setSetPointW(500);
+                setSetPointW(600);
                 setAngleLeft(90*calibratorA);
                 setSetPointV(0);
                 done = 1;   //set the flag that a new command started
@@ -251,7 +410,7 @@ uint8_t executeStep(char run_path){
             else {
                 if (abs(getAngleLeft()) < 10.0 ) {
                     setSetPointW(0);
-                    stopController();
+                    // stopController();
                     stopIRcentering();
                     done = 0;
 
@@ -273,16 +432,28 @@ uint8_t executeStep(char run_path){
             done = 1;   //set the flag that a new command started
         }
         else {
-            // if (isWallFront() == 1 && (getDistanceLeft() > 70) ) setDistanceLeft(70);
-            if (isWallFront() == 2 && (getDistanceLeft() > 40) ) setDistanceLeft(40);
-            // if (isWallLeft() == 0 && (getDistanceLeft() > 80) ) setDistanceLeft(80);
-            // if (isWallRight() == 0 && (getDistanceLeft() > 80) ) setDistanceLeft(80);
+            if (isWallFront() == 1 && (getDistanceLeft() > 90) ) setDistanceLeft(90);
+            if (isWallFront() == 2 && (getDistanceLeft() > 60) ) {setDistanceLeft(60);}
+            // if (isWallLeft() == 0 &&  old_wall_left == 1) setDistanceLeft(60);
+            // if (isWallRight() == 0 &&  old_wall_right == 1) setDistanceLeft(60);
             if (getDistanceLeft() == 0) {
                 setSetPointV(0);
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                Serial2.println("Termino");
+                delay(10);
                 done = 0;
                 // stopController();
                 // stopIRcentering();
             }
+            old_wall_left = isWallLeft();
+            old_wall_right = isWallRight();
         }
     }
 
@@ -692,7 +863,7 @@ uint8_t executeStep(char run_path){
     //     }
     //
     //     if (data == '2') {
-    //         motorLeftWrite(60000);
+    //         motorLeftWrite(50000);
     //         // motorRightWrite(60000);
     //     }
     //
